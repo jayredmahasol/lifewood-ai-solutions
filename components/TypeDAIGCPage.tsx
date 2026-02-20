@@ -118,7 +118,7 @@ export const TypeDAIGCPage: React.FC = () => {
               className="md:col-span-2 relative group rounded-[2.5rem] overflow-hidden bg-[#F9F7F7] border border-[#133020]/5 shadow-sm hover:shadow-md transition-shadow"
             >
                <img 
-                 src="https://images.unsplash.com/photo-1626785774573-4b79931256ce?q=80&w=2940&auto=format&fit=crop" 
+                 src="https://blogs-cdn.imagine.art/Lighting_Static_fc6de099d4.webp" 
                  alt="Storyboarding" 
                  className="absolute inset-0 w-full h-full object-cover opacity-100 transition-transform duration-700 group-hover:scale-105"
                />
