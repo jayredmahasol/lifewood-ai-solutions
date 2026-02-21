@@ -84,7 +84,7 @@ export const TypeAServicingPage: React.FC = () => {
              className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-[#133020]/5"
            >
               <img 
-                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2864&auto=format&fit=crop" 
+                src="https://www.thoughtco.com/thmb/NSRe2tfljK1rIO2apVL6JwFVoew=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-108757759-5aef2840119fa80037901b41.jpg" 
                 alt="Abstract Data" 
                 className="absolute inset-0 w-full h-full object-cover"
               />

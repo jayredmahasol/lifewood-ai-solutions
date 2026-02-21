@@ -76,7 +76,7 @@ export const Services: React.FC = () => {
           >
             <div className="absolute inset-0 bg-black/40 z-10 transition-colors group-hover:bg-black/20"></div>
             <img 
-              src="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2874&auto=format&fit=crop" 
+              src="https://images.nightcafe.studio/jobs/hiT2rFOKk6u509cb2NB8/hiT2rFOKk6u509cb2NB8--2--2lo0c.jpg" 
               alt="Image"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />

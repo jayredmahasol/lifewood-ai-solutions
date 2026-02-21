@@ -30,7 +30,7 @@ export const Footer: React.FC = () => {
           
           {/* Column 1: Contact */}
           <div className="md:col-span-5">
-            <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-[#046241] mb-6">Get in Touch</h3>
+            <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-[#046241] mb-6">READY TO START?</h3>
             
             <a 
                href="#contact"

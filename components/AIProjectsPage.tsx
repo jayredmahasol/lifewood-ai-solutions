@@ -36,7 +36,7 @@ const projects = [
     title: 'NLP & Speech',
     icon: Languages,
     description: "Collaborating with global leaders in NLP, we provide robust solutions across 50+ languages. Our global workforce excels in collecting and transcribing native speaker recordings at scale.",
-    image: "https://images.unsplash.com/photo-1589254065878-42c9da9e2f58?q=80&w=2940&auto=format&fit=crop"
+    image: "https://time.com/redesign/_next/image/?url=https%3A%2F%2Fapi.time.com%2Fwp-content%2Fuploads%2F2023%2F05%2FGettyImages-1367728606.jpg%3Fquality%3D85%26w%3D1800&w=1920&q=75"
   },
   {
     id: '06',

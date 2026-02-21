@@ -11,7 +11,7 @@ const marqueeItems = [
   {
     category: "Video",
     text: "Collection, labelling, audit, live broadcast, subtitle generation",
-    image: "https://images.unsplash.com/photo-1574717432722-a0f9c21d347c?q=80&w=2940&auto=format&fit=crop"
+    image: "https://www.vidyard.com/wp-content/uploads/ai-video-vs-manual-video-1982x1114-1-768x432.jpeg"
   },
   {
     category: "Image",

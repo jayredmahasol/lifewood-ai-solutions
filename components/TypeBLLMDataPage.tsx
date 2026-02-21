@@ -84,7 +84,7 @@ export const TypeBLLMDataPage: React.FC = () => {
              className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-[#133020]/5"
            >
               <img 
-                src="https://images.unsplash.com/photo-1614730341194-75c607400070?q=80&w=2874&auto=format&fit=crop" 
+                src="https://img.freepik.com/premium-photo/sound-wave-audio-technology-ai-generated_941600-14385.jpg" 
                 alt="Audio Waves" 
                 className="absolute inset-0 w-full h-full object-cover"
               />

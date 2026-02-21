@@ -8,7 +8,7 @@ const tabs = [
     label: 'TARGET',
     title: 'Target',
     description: 'Annotate vehicles, pedestrians, and road objects with 2D & 3D techniques to enable accurate object detection for autonomous driving. Self-driving cars rely on precise visual training.',
-    image: 'https://images.unsplash.com/photo-1555529902-526e14a139e9?q=80&w=2832&auto=format&fit=crop',
+    image: 'https://impactoutsourcing.co.ke/wp-content/uploads/2022/11/img-annotation.jpeg',
     icon: Car
   },
   {
@@ -84,7 +84,7 @@ export const TypeCVerticalLLMDataPage: React.FC = () => {
              className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-[#133020]/5"
            >
               <img 
-                src="https://images.unsplash.com/photo-1614730341194-75c607400070?q=80&w=2874&auto=format&fit=crop" 
+                src="https://png.pngtree.com/background/20250108/original/pngtree-abstract-secure-technology-background-with-lock-and-circuit-image-picture-image_15492692.jpg" 
                 alt="Abstract Tech" 
                 className="absolute inset-0 w-full h-full object-cover"
               />

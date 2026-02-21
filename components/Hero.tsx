@@ -27,24 +27,17 @@ export const Hero: React.FC = () => {
         <div className="mb-12">
           <BlurText
             text="The world's leading provider"
-            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-[#f5eedb] leading-[1.1] justify-center mb-2"
+            className="text-2xl md:text-5xl lg:text-6xl font-bold tracking-tight text-lifewood-white leading-tight mb-8"
             delay={0.1}
           />
           <BlurText
             text="of AI-powered data solutions."
-            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-[#f5eedb] leading-[1.1] justify-center"
+            className="text-2xl md:text-5xl lg:text-6xl font-bold tracking-tight text-lifewood-white leading-tight mb-8"
             delay={0.6}
           />
         </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          className="text-xl md:text-2xl text-[#ffffff]/70 max-w-3xl mx-auto mb-12 font-light leading-relaxed"
-        >
-          Empowering the next generation of artificial intelligence with precision-engineered data at global scale.
-        </motion.p>
+        
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -53,7 +46,7 @@ export const Hero: React.FC = () => {
           className="flex justify-center"
         >
           <a href="#contact" className="group relative inline-flex items-center gap-4 px-10 py-5 bg-[#133020] rounded-full text-white text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-            <span>Start Your Project</span>
+            <span>Contact Us</span>
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFB347] text-[#133020] group-hover:rotate-45 transition-transform duration-300">
               <ArrowRight size={18} />
             </span>
