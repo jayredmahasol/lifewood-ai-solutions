@@ -201,37 +201,7 @@ export const AIProjectsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="px-6 max-w-5xl mx-auto text-center">
-         <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           className="bg-[#133020] rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden"
-         >
-            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#046241] via-transparent to-transparent"></div>
-            </div>
-            
-            <div className="relative z-10">
-               <h2 className="text-3xl md:text-5xl font-light leading-tight mb-8">
-                  Have a project in mind? <br/>
-                  <span className="font-serif italic text-[#FFB347]">Let's build it together.</span>
-               </h2>
-               <p className="text-xl text-[#f5eedb]/80 mb-12 max-w-2xl mx-auto">
-                  Our team is ready to help you leverage the power of AI for your specific needs.
-               </p>
-               
-               <a 
-                 href="#contact"
-                 className="inline-flex items-center gap-3 px-8 py-4 bg-[#FFB347] text-[#133020] rounded-full font-bold text-lg hover:bg-[#FFC370] transition-all hover:scale-105 shadow-lg"
-               >
-                  Get in Touch <ArrowRight size={20} />
-               </a>
-            </div>
-         </motion.div>
-      </section>
-
+      {/* CTA Section Removed */ }
     </div>
   );
 };
