@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ArrowUpRight, Mic, Globe, BarChart3, Users } from 'lucide-react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { HorizontalTabSwap } from './HorizontalTabSwap';
 
 const tabs = [
   {
@@ -30,7 +31,6 @@ const tabs = [
 ];
 
 export const TypeBLLMDataPage: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -38,8 +38,6 @@ export const TypeBLLMDataPage: React.FC = () => {
   });
 
   const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-
-  const activeTab = tabs[activeIndex];
 
   return (
     <div ref={containerRef} className="bg-[#f5eedb] min-h-screen font-sans text-[#133020] selection:bg-[#FFB347] selection:text-[#133020] overflow-hidden">
@@ -105,91 +103,13 @@ export const TypeBLLMDataPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Vertical Content Switcher Section */}
+      {/* Horizontal Tab Switcher Section */}
       <section className="px-6 max-w-[1400px] mx-auto mb-32">
-        <div className="mb-12">
+        <div className="mb-12 text-center">
            <h2 className="text-3xl md:text-4xl font-bold text-[#133020] uppercase tracking-wider">TYPE B- HORIZONTAL LLM DATA</h2>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 min-h-[600px]">
-           {/* Left Sidebar: Vertical Navigation */}
-           <div className="lg:w-1/3 flex flex-col gap-4">
-              {tabs.map((tab, index) => (
-                 <div 
-                    key={tab.id}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    className={`
-                       group cursor-pointer p-8 rounded-[2rem] transition-all duration-300 relative overflow-hidden border
-                       ${activeIndex === index 
-                          ? 'bg-[#133020] text-white border-[#133020] shadow-xl scale-105 z-10' 
-                          : 'bg-white text-[#133020] border-[#133020]/5 hover:bg-[#F9F7F7] hover:border-[#133020]/10'
-                       }
-                    `}
-                 >
-                    <div className="flex items-center justify-between relative z-10">
-                       <div className="flex flex-col">
-                          <span className={`text-xs font-bold tracking-widest mb-2 ${activeIndex === index ? 'text-[#FFB347]' : 'text-[#133020]/40'}`}>
-                             {tab.id}
-                          </span>
-                          <h3 className="text-2xl font-bold">{tab.label}</h3>
-                       </div>
-                       
-                       {/* Arrow Icon */}
-                       <div className={`
-                          w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300
-                          ${activeIndex === index ? 'bg-[#FFB347] text-[#133020]' : 'bg-[#133020]/5 text-[#133020]/40 group-hover:bg-[#133020]/10'}
-                       `}>
-                          <ArrowUpRight size={24} className={`transition-transform duration-300 ${activeIndex === index ? 'rotate-0' : 'rotate-45 opacity-50'}`} />
-                       </div>
-                    </div>
-                 </div>
-              ))}
-           </div>
-
-           {/* Right Content Pane */}
-           <div className="lg:w-2/3 relative rounded-[3rem] overflow-hidden bg-[#F9F7F7] shadow-inner border border-[#133020]/5 min-h-[500px] lg:min-h-auto">
-              <AnimatePresence mode="wait">
-                 <motion.div
-                    key={activeTab.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute inset-0 flex flex-col"
-                 >
-                    {/* Image Section */}
-                    <div className="relative h-2/3 w-full overflow-hidden">
-                       <img 
-                          src={activeTab.image} 
-                          alt={activeTab.title} 
-                          className="w-full h-full object-cover"
-                       />
-                       <div className="absolute inset-0 bg-[#133020]/10 mix-blend-multiply"></div>
-                       <div className="absolute inset-0 bg-gradient-to-t from-[#F9F7F7] to-transparent opacity-80"></div>
-                    </div>
-
-                    {/* Text Content Section */}
-                    <div className="relative z-10 flex-1 p-8 md:p-12 flex flex-col justify-center">
-                       <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2, duration: 0.4 }}
-                       >
-                          <div className="flex items-center gap-4 mb-6">
-                             <div className="w-12 h-12 bg-[#046241] rounded-2xl flex items-center justify-center text-[#FFB347] shadow-lg">
-                                <activeTab.icon size={24} />
-                             </div>
-                             <h3 className="text-4xl font-bold text-[#133020]">{activeTab.title}</h3>
-                          </div>
-                          <p className="text-xl text-[#133020]/70 leading-relaxed max-w-2xl">
-                             {activeTab.description}
-                          </p>
-                       </motion.div>
-                    </div>
-                 </motion.div>
-              </AnimatePresence>
-           </div>
-        </div>
+        <HorizontalTabSwap tabs={tabs} />
       </section>
 
     </div>

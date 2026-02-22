@@ -155,6 +155,7 @@ export const AIProjectsPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
+                onMouseEnter={() => setActiveProject(project)}
                 onClick={() => setActiveProject(project)}
                 className={`
                    group cursor-pointer rounded-[2rem] p-8 transition-all duration-300 border
@@ -181,7 +182,8 @@ export const AIProjectsPage: React.FC = () => {
                    </div>
                 </div>
                 
-                <div className={`overflow-hidden transition-all duration-500 ${activeProject.id === project.id ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 lg:max-h-0'}`}>
+                {/* Description - Hidden on Desktop since it's shown in the sticky preview */}
+                <div className={`lg:hidden overflow-hidden transition-all duration-500 ${activeProject.id === project.id ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                    <p className="text-[#133020]/70 leading-relaxed">
                       {project.description}
                    </p>
