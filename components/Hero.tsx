@@ -45,14 +45,14 @@ export const Hero: React.FC = () => {
         >
           <motion.a 
             href="#contact" 
-            className="group relative inline-flex items-center gap-4 px-10 py-5 bg-white rounded-full text-[#133020] text-lg font-bold shadow-xl"
+            className="group relative inline-flex items-center gap-3 px-8 py-3 bg-white rounded-full text-[#133020] text-sm font-bold shadow-lg"
             whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <span>Contact Us</span>
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#FFB347] text-[#133020] group-hover:rotate-45 transition-transform duration-300">
-              <ArrowRight size={18} />
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#133020] text-white group-hover:rotate-45 transition-transform duration-300">
+              <ArrowRight size={16} />
             </span>
           </motion.a>
         </motion.div>

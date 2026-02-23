@@ -1,7 +1,10 @@
-import React from 'react';
-import { Linkedin, Facebook, Instagram, Youtube, ArrowUpRight, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Linkedin, Facebook, Instagram, Youtube, ArrowUpRight, ArrowRight, MessageSquare } from 'lucide-react';
+import { Chatbot } from './Chatbot';
 
 export const Footer: React.FC = () => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <footer id="contact" className="mx-4 mb-4 rounded-[2rem] bg-[#133020] text-[#f5eedb] py-12 px-6 md:px-12 overflow-hidden relative font-sans shadow-2xl">
       
@@ -108,16 +111,22 @@ export const Footer: React.FC = () => {
         </div>
       </div>
       
-      {/* Floating Action Button for Call */}
+      {/* Floating Action Button for Chat */}
       <div className="fixed bottom-8 right-8 z-50">
-        <button className="flex items-center gap-3 bg-[#FFB347] text-[#133020] px-5 py-3 rounded-full shadow-2xl hover:bg-[#FFC370] transition-all hover:scale-105 hover:-translate-y-1 group font-bold border-2 border-[#133020]/10">
+        <button 
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="flex items-center gap-3 bg-[#FFB347] text-[#133020] px-5 py-3 rounded-full shadow-2xl hover:bg-[#FFC370] transition-all hover:scale-105 hover:-translate-y-1 group font-bold border-2 border-[#133020]/10"
+        >
             <div className="relative flex items-center justify-center">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#046241] animate-ping absolute opacity-75"></div>
                 <div className="w-2.5 h-2.5 rounded-full bg-[#046241] relative z-10"></div>
             </div>
-            <span className="pr-1 tracking-wide text-sm">Start a call</span>
+            <span className="pr-1 tracking-wide text-sm">Talk to us</span>
         </button>
       </div>
+
+      {/* Chatbot Panel */}
+      <Chatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </footer>
   );
 };
