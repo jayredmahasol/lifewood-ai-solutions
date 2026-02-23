@@ -93,24 +93,34 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
         <div className="hidden lg:flex items-center gap-6 xl:gap-8">
           {navItems.map((item) => {
             const active = isActive(item.href) || (item.children && isParentActive(item.children));
+            const hasChildren = item.children && item.children.length > 0;
 
             return (
               <div key={item.label} className="relative group">
-                <a
-                  href={item.href}
-                  className={`
-                  flex items-center gap-1 text-sm font-medium transition-colors py-2
-                  ${active ? 'text-lifewood-orange' : 'text-black hover:text-lifewood-primaryGreen'}
-                `}
-                >
-                  {item.label}
-                  {item.children && (
+                {hasChildren ? (
+                  <div
+                    className={`
+                    flex items-center gap-1 text-sm font-medium transition-colors py-2 cursor-default
+                    ${active ? 'text-lifewood-orange' : 'text-black hover:text-lifewood-primaryGreen'}
+                  `}
+                  >
+                    {item.label}
                     <ChevronDown
                       size={14}
                       className="group-hover:rotate-180 transition-transform duration-200"
                     />
-                  )}
-                </a>
+                  </div>
+                ) : (
+                  <a
+                    href={item.href}
+                    className={`
+                    flex items-center gap-1 text-sm font-medium transition-colors py-2
+                    ${active ? 'text-lifewood-orange' : 'text-black hover:text-lifewood-primaryGreen'}
+                  `}
+                  >
+                    {item.label}
+                  </a>
+                )}
 
                 {/* Desktop Dropdown */}
                 {item.children && (

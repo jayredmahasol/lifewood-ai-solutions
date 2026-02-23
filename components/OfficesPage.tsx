@@ -1,12 +1,34 @@
 import React, { useEffect, useRef } from 'react';
 import { ArrowDown, Globe, MapPin, Users, Building2, ArrowUpRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useInView, animate } from 'framer-motion';
 
 declare global {
   interface Window {
     L: any;
   }
 }
+
+const Counter = ({ value, duration = 2 }: { value: number, duration?: number }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (inView) {
+      const node = ref.current;
+      const controls = animate(0, value, {
+        duration,
+        onUpdate(value) {
+          if (node) {
+            node.textContent = Math.floor(value).toLocaleString();
+          }
+        }
+      });
+      return () => controls.stop();
+    }
+  }, [inView, value, duration]);
+
+  return <span ref={ref}>0</span>;
+};
 
 export const OfficesPage: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +46,10 @@ export const OfficesPage: React.FC = () => {
     const map = L.map(mapContainerRef.current, {
         zoomControl: false, 
         attributionControl: false,
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        minZoom: 2,
+        maxBounds: [[-90, -180], [90, 180]],
+        maxBoundsViscosity: 1.0
     }).setView([20, 10], 2);
 
     mapInstanceRef.current = map;
@@ -33,7 +58,9 @@ export const OfficesPage: React.FC = () => {
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
-      maxZoom: 19
+      maxZoom: 19,
+      noWrap: true,
+      bounds: [[-90, -180], [90, 180]]
     }).addTo(map);
 
     // Add Zoom Control to top right to match screenshot
@@ -171,7 +198,9 @@ export const OfficesPage: React.FC = () => {
                      <Users size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Resources</span>
                   </div>
-                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">56,788</div>
+                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
+                    <Counter value={56788} />
+                  </div>
                   <div className="text-lg font-light opacity-60">Active Online Contributors</div>
                 </div>
 
@@ -183,7 +212,9 @@ export const OfficesPage: React.FC = () => {
                      <Globe size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Coverage</span>
                   </div>
-                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">30 +</div>
+                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
+                    <Counter value={30} /> +
+                  </div>
                   <div className="text-lg font-light opacity-60">Countries Represented</div>
                 </div>
 
@@ -195,7 +226,9 @@ export const OfficesPage: React.FC = () => {
                      <Building2 size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Network</span>
                   </div>
-                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">40 +</div>
+                  <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
+                    <Counter value={40} /> +
+                  </div>
                   <div className="text-lg font-light opacity-60">Global Centers</div>
                 </div>
 
