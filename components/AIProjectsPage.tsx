@@ -148,7 +148,7 @@ export const AIProjectsPage: React.FC = () => {
           </div>
 
           {/* Right Side - Project List */}
-          <div className="w-full lg:w-1/2 flex flex-col gap-4">
+          <div className="w-full lg:w-1/2 flex flex-col gap-3">
             {projects.map((project) => (
               <motion.div 
                 key={project.id}
@@ -158,19 +158,19 @@ export const AIProjectsPage: React.FC = () => {
                 onMouseEnter={() => setActiveProject(project)}
                 onClick={() => setActiveProject(project)}
                 className={`
-                   group cursor-pointer rounded-[2rem] p-8 transition-all duration-300 border
+                   group cursor-pointer rounded-[1.5rem] p-6 transition-all duration-300 border
                    ${activeProject.id === project.id 
                       ? 'bg-[#ffffff] border-[#133020]/5 shadow-xl scale-[1.02]' 
                       : 'bg-[#F9F7F7] border-transparent hover:bg-[#ffffff] hover:shadow-md'
                    }
                 `}
               >
-                <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center justify-between gap-4">
                    <div className="flex items-center gap-4">
                       <span className={`font-mono text-sm font-bold ${activeProject.id === project.id ? 'text-[#FFB347]' : 'text-[#133020]/30'}`}>
                          {project.id}
                       </span>
-                      <h3 className={`text-2xl font-bold ${activeProject.id === project.id ? 'text-[#133020]' : 'text-[#133020]/60'}`}>
+                      <h3 className={`text-xl font-bold ${activeProject.id === project.id ? 'text-[#133020]' : 'text-[#133020]/60'}`}>
                          {project.title}
                       </h3>
                    </div>
@@ -183,14 +183,14 @@ export const AIProjectsPage: React.FC = () => {
                 </div>
                 
                 {/* Description - Hidden on Desktop since it's shown in the sticky preview */}
-                <div className={`lg:hidden overflow-hidden transition-all duration-500 ${activeProject.id === project.id ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                   <p className="text-[#133020]/70 leading-relaxed">
+                <div className={`lg:hidden overflow-hidden transition-all duration-500 ${activeProject.id === project.id ? 'max-h-40 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
+                   <p className="text-[#133020]/70 leading-relaxed text-sm">
                       {project.description}
                    </p>
                 </div>
 
                 {/* Mobile Image (Visible only on small screens when active) */}
-                <div className={`lg:hidden overflow-hidden transition-all duration-500 mt-4 ${activeProject.id === project.id ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className={`lg:hidden overflow-hidden transition-all duration-500 ${activeProject.id === project.id ? 'max-h-64 opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
                    <img 
                      src={project.image} 
                      alt={project.title} 
