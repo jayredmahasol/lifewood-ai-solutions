@@ -105,7 +105,7 @@ export const AboutUsPage: React.FC = () => {
       <section className="px-6 max-w-7xl mx-auto mb-32">
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Left: Title & Intro */}
-          <div className="lg:w-1/3 lg:sticky lg:top-32 h-fit">
+          <div className="lg:w-5/12 lg:sticky lg:top-32 h-fit">
             <motion.div
                initial={{ opacity: 0, y: 20 }}
                whileInView={{ opacity: 1, y: 0 }}
@@ -114,14 +114,24 @@ export const AboutUsPage: React.FC = () => {
                <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-[#133020] mb-8">
                  CORE <span className="text-[#FFB347]">VALUES</span>
                </h2>
-               <p className="text-xl text-[#133020]/70 leading-relaxed">
+               <p className="text-xl text-[#133020]/70 leading-relaxed mb-12">
                  At Lifewood we empower our company and our clients to realise the transformative power of AI: Bringing big data to life, launching new ways of thinking, innovating, learning, and doing.
                </p>
+
+               {/* Added Image to balance layout */}
+               <div className="hidden lg:block rounded-[2.5rem] overflow-hidden shadow-2xl border border-[#133020]/5 aspect-[3/4] relative group">
+                 <div className="absolute inset-0 bg-[#046241]/10 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                 <img 
+                   src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2832&auto=format&fit=crop" 
+                   alt="Lifewood Core Values" 
+                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                 />
+               </div>
             </motion.div>
           </div>
 
           {/* Right: Values List */}
-          <div className="lg:w-2/3 flex flex-col gap-6">
+          <div className="lg:w-7/12 flex flex-col gap-6">
             {values.map((value, index) => (
               <motion.div 
                 key={index}

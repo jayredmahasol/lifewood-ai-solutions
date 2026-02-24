@@ -141,6 +141,14 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
               </div>
             )
           })}
+          
+          {/* Sign In Button */}
+          <a 
+            href="#login"
+            className="ml-4 px-5 py-2 bg-[#133020] text-white rounded-full text-sm font-bold hover:bg-[#046241] transition-all hover:scale-105 shadow-lg"
+          >
+            Sign In
+          </a>
         </div>
 
         {/* Mobile Toggle */}
@@ -194,6 +202,17 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
                 )}
               </div>
             ))}
+            
+            {/* Mobile Sign In Button */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <a 
+                href="#login"
+                className="block w-full text-center px-5 py-3 bg-[#133020] text-white rounded-xl text-lg font-bold hover:bg-[#046241] transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In
+              </a>
+            </div>
           </div>
         )}
 
