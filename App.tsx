@@ -122,7 +122,7 @@ function App() {
         </AnimatePresence>
       </main>
       
-      {!isValidationPage && <Footer />}
+      {!isValidationPage && !isLoginPage && <Footer />}
     </div>
   );
 }
