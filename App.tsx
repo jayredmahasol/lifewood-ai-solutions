@@ -54,7 +54,7 @@ function App() {
   const isContactPage = currentRoute === '#contact';
   const isNewsPage = currentRoute === '#news';
   const isLoginPage = currentRoute === '#login';
-  const isDashboardPage = currentRoute === '#dashboard';
+  const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings';
 
   return (
     <div className="min-h-screen bg-lifewood-beige text-lifewood-darkGreen selection:bg-lifewood-primaryGreen selection:text-white font-sans">
