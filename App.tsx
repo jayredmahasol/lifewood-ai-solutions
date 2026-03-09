@@ -23,6 +23,7 @@ import { ContactUsPage } from './components/ContactUsPage';
 import { InternalNewsPage } from './components/InternalNewsPage';
 import { LoginPage } from './components/LoginPage';
 import { DashboardPage } from './components/DashboardPage';
+import { AdminDashboardPage } from './components/AdminDashboardPage';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -54,11 +55,12 @@ function App() {
   const isContactPage = currentRoute === '#contact';
   const isNewsPage = currentRoute === '#news';
   const isLoginPage = currentRoute === '#login';
+  const isAdminDashboardPage = currentRoute === '#admin-dashboard';
   const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings';
 
   return (
     <div className="min-h-screen bg-lifewood-beige text-lifewood-darkGreen selection:bg-lifewood-primaryGreen selection:text-white font-sans">
-      {!isValidationPage && !isLoginPage && !isDashboardPage && <Navbar currentRoute={currentRoute} />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && <Navbar currentRoute={currentRoute} />}
       
       <main>
         <AnimatePresence mode="wait">
@@ -73,6 +75,8 @@ function App() {
               <ValidationPage />
             ) : isLoginPage ? (
               <LoginPage />
+            ) : isAdminDashboardPage ? (
+              <AdminDashboardPage />
             ) : isDashboardPage ? (
               <DashboardPage />
             ) : isAIServicesPage ? (
@@ -126,7 +130,7 @@ function App() {
         </AnimatePresence>
       </main>
       
-      {!isValidationPage && !isLoginPage && !isDashboardPage && <Footer />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && <Footer />}
     </div>
   );
 }

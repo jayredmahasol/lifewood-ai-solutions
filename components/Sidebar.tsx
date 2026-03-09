@@ -8,20 +8,16 @@ import {
   Settings, 
   LogOut, 
   ChevronRight,
-  PieChart,
-  Moon,
-  Sun
+  PieChart
 } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
-  isDarkMode: boolean;
-  toggleTheme: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, isDarkMode, toggleTheme }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, link: '#dashboard' },
     { id: 'profile', label: 'Profile', icon: User, link: '#profile' },
@@ -53,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               key={item.id}
               href={item.link}
               onClick={() => setActiveTab(item.id)}
-              className={`relative flex items-center gap-4 px-5 py-4 transition-all duration-300 group ${
+              className={`relative flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
                 isActive 
                   ? 'bg-[#FFB347] text-[#133020] shadow-lg shadow-[#FFB347]/20 font-bold' 
                   : 'text-white/60 hover:bg-white/5 hover:text-white'
@@ -65,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
               {isActive && (
                 <motion.div
                   layoutId="activeIndicator"
-                  className="absolute right-4 w-1.5 h-1.5 bg-[#133020]"
+                  className="absolute right-4 w-1.5 h-1.5 rounded-full bg-[#133020]"
                 />
               )}
             </a>
@@ -76,16 +72,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout, is
       {/* Bottom Section */}
       <div className="p-6 border-t border-white/5 mx-6 mb-4 space-y-2">
         <button 
-          onClick={toggleTheme}
-          className="w-full flex items-center gap-4 px-5 py-4 text-white/60 hover:bg-white/5 hover:text-white transition-all group"
-        >
-          {isDarkMode ? <Sun size={22} className="group-hover:rotate-90 transition-transform duration-500" /> : <Moon size={22} className="group-hover:-rotate-12 transition-transform duration-500" />}
-          <span className="text-sm font-medium tracking-wide">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-        </button>
-
-        <button 
           onClick={onLogout}
-          className="w-full flex items-center gap-4 px-5 py-4 text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all group"
+          className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-white/40 hover:bg-red-500/10 hover:text-red-400 transition-all group"
         >
           <LogOut size={22} className="group-hover:translate-x-1 transition-transform" />
           <span className="text-sm font-medium tracking-wide">Logout</span>

@@ -47,6 +47,14 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    // Admin bypass
+    if (email === 'admin1' && password === 'admin1') {
+      localStorage.setItem('isAdmin', 'true');
+      window.location.hash = '#admin-dashboard';
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -55,6 +63,7 @@ export const LoginPage: React.FC = () => {
 
       if (error) throw error;
       
+      localStorage.removeItem('isAdmin');
       // Redirect or handle successful login
       window.location.hash = '#dashboard'; // Go to home/dashboard
     } catch (err: any) {
@@ -187,10 +196,10 @@ export const LoginPage: React.FC = () => {
                 )}
                 
                 <InputField 
-                  label="Email Address" 
+                  label="Email Address or Username" 
                   icon={Mail} 
-                  type="email" 
-                  placeholder="name@company.com" 
+                  type="text" 
+                  placeholder="name@company.com or admin1" 
                   value={email}
                   onChange={(e: any) => setEmail(e.target.value)}
                   disabled={loading}
@@ -280,10 +289,10 @@ export const LoginPage: React.FC = () => {
                 />
                 
                 <InputField 
-                  label="Email Address" 
+                  label="Email Address or Username" 
                   icon={Mail} 
-                  type="email" 
-                  placeholder="name@company.com" 
+                  type="text" 
+                  placeholder="name@company.com or admin1" 
                   value={email}
                   onChange={(e: any) => setEmail(e.target.value)}
                   disabled={loading}

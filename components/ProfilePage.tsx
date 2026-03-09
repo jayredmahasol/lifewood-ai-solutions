@@ -32,7 +32,7 @@ const InputGroup = ({ label, icon: Icon, children, className = "" }: any) => (
 const TextInput = ({ ...props }) => (
   <input 
     {...props}
-    className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-3 px-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300"
+    className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 rounded-xl py-3 px-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300"
   />
 );
 
@@ -327,10 +327,10 @@ create policy "Anyone can update their own avatar."
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#f5eedb]"><div className="animate-spin w-8 h-8 border-4 border-[#046241] border-t-transparent rounded-full"></div></div>;
+  if (loading) return <div className="h-full flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-[#046241] border-t-transparent rounded-full"></div></div>;
 
   return (
-    <div className="min-h-screen bg-[#f5eedb] font-sans p-4 md:p-8 flex flex-col relative">
+    <div className="h-full font-sans flex flex-col relative">
       {/* Loading Overlay */}
       {saveStatus !== 'idle' && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -383,27 +383,19 @@ create policy "Anyone can update their own avatar."
         </div>
       )}
 
-      {/* Back Link */}
-      <div className="max-w-[1600px] mx-auto w-full mb-6">
-        <a href="#dashboard" className="inline-flex items-center gap-2 text-[#133020]/60 hover:text-[#133020] transition-colors group font-medium">
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Dashboard
-        </a>
-      </div>
-
       {/* Main Card Container */}
-      <div className="flex-1 max-w-[1600px] mx-auto w-full bg-white/80 backdrop-blur-2xl border border-white/50 shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+      <div className="flex-1 max-w-[1600px] mx-auto w-full bg-white/80 backdrop-blur-2xl border border-white/50 rounded-r-[3rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row">
         
         {/* Sidebar / Profile Info */}
         <aside className="w-full lg:w-[400px] bg-[#133020] text-white p-10 flex flex-col items-center relative overflow-hidden">
           {/* Decorative Background */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#046241] blur-[80px] opacity-50 -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFB347] blur-[80px] opacity-20 translate-y-1/2 -translate-x-1/2"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#046241] rounded-full blur-[80px] opacity-50 -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFB347] rounded-full blur-[80px] opacity-20 translate-y-1/2 -translate-x-1/2"></div>
           
           <div className="relative z-10 flex flex-col items-center w-full h-full">
             {/* Profile Image */}
             <div className="relative group cursor-pointer mb-6">
-              <div className="w-48 h-48 border-4 border-[#FFB347] overflow-hidden bg-white shadow-2xl">
+              <div className="w-48 h-48 rounded-full border-4 border-[#FFB347] overflow-hidden bg-white shadow-2xl">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -415,7 +407,7 @@ create policy "Anyone can update their own avatar."
               
               {/* Upload Overlay */}
               <div 
-                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {uploading ? (
@@ -434,13 +426,13 @@ create policy "Anyone can update their own avatar."
             </div>
 
             <h2 className="text-3xl font-bold text-center mb-2">{formData.firstName} {formData.lastName || 'User'}</h2>
-            <div className="px-4 py-1.5 bg-white/10 text-sm font-medium backdrop-blur-sm border border-white/10 mb-8">
+            <div className="px-4 py-1.5 bg-white/10 rounded-full text-sm font-medium backdrop-blur-sm border border-white/10 mb-8">
               {formData.designation || 'Intern / Student'}
             </div>
 
             {/* Quick Stats / Info */}
             <div className="w-full space-y-6 mt-auto">
-              <div className="bg-white/5 p-5 border border-white/10">
+              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
                 <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
                   <Briefcase size={18} />
                   <span className="text-xs font-bold uppercase tracking-wider">School</span>
@@ -448,7 +440,7 @@ create policy "Anyone can update their own avatar."
                 <p className="font-medium text-lg leading-tight">{formData.school || 'Not set'}</p>
               </div>
 
-              <div className="bg-white/5 p-5 border border-white/10">
+              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
                 <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
                   <Clock size={18} />
                   <span className="text-xs font-bold uppercase tracking-wider">Required Hours</span>
@@ -456,7 +448,7 @@ create policy "Anyone can update their own avatar."
                 <p className="font-medium text-lg">{formData.requiredHours ? `${formData.requiredHours} Hours` : 'Not set'}</p>
               </div>
 
-              <div className="bg-white/5 p-5 border border-white/10">
+              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
                 <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
                   <MapPin size={18} />
                   <span className="text-xs font-bold uppercase tracking-wider">Location</span>
@@ -500,7 +492,7 @@ create policy "Anyone can update their own avatar."
                     </InputGroup>
                     
                     <InputGroup label="Gender" icon={User}>
-                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 py-3 px-4 outline-none text-[#133020]">
+                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -515,7 +507,7 @@ create policy "Anyone can update their own avatar."
                     </InputGroup>
                     
                     <InputGroup label="Civil Status" icon={Heart}>
-                      <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 py-3 px-4 outline-none text-[#133020]">
+                      <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
                         <option value="">Select Status</option>
                         <option value="Single">Single</option>
                         <option value="Married">Married</option>
@@ -539,7 +531,7 @@ create policy "Anyone can update their own avatar."
                           name="school" 
                           value={formData.school} 
                           onChange={handleChange} 
-                          className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
+                          className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
                         >
                           <option value="">Select School</option>
                           {schools.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}

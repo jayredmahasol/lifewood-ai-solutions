@@ -77,7 +77,7 @@ const InputField = ({ label, icon: Icon, ...props }: any) => (
       <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/30 group-focus-within:text-[#046241] transition-colors" size={18} />
       <input 
         {...props}
-        className="w-full bg-white border border-[#133020]/10 focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-4 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+        className="w-full bg-white border border-[#133020]/10 rounded-2xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-4 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
       />
     </div>
   </div>
@@ -113,7 +113,6 @@ export const DashboardPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,10 +121,6 @@ export const DashboardPage: React.FC = () => {
       const url = URL.createObjectURL(file);
       setAvatarUrl(url);
     }
-  };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
   };
   
   // Settings State
@@ -243,15 +238,11 @@ export const DashboardPage: React.FC = () => {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onLogout={handleLogout} 
-        isDarkMode={isDarkMode}
-        toggleTheme={toggleTheme}
       />
 
       {/* Main Content */}
       <main 
-        className={`flex-1 relative shadow-2xl shadow-black/50 h-screen overflow-hidden flex flex-col transition-all duration-500 ease-in-out ml-80 ${
-          isDarkMode ? 'bg-[#060010] text-white' : 'bg-[#f5eedb] text-[#133020]'
-        }`}
+        className={`flex-1 relative shadow-2xl shadow-black/50 h-screen overflow-hidden flex flex-col transition-all duration-500 ease-in-out ml-80 bg-[#f5eedb] text-[#133020]`}
       >
         <div className="p-6 md:p-8 w-full h-full flex flex-col gap-6">
           
@@ -259,12 +250,12 @@ export const DashboardPage: React.FC = () => {
           <div className="absolute top-6 right-8 z-50 flex items-center gap-4">
             <a 
               href="#profile"
-              className={`flex items-center gap-3 px-4 py-2 border backdrop-blur-sm transition-all hover:bg-opacity-80 hover:scale-105 cursor-pointer ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-[#133020]/5 border-[#133020]/10'}`}
+              className={`flex items-center gap-3 px-4 py-2 border rounded-full backdrop-blur-sm transition-all hover:bg-opacity-80 hover:scale-105 cursor-pointer bg-[#133020]/5 border-[#133020]/10`}
             >
-               <div className="w-8 h-8 bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold text-xs">
+               <div className="w-8 h-8 rounded-full bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold text-xs">
                  {fullName.charAt(0).toUpperCase()}
                </div>
-               <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-[#133020]'}`}>{fullName}</span>
+               <span className={`text-sm font-bold text-[#133020]`}>{fullName}</span>
             </a>
           </div>
 
@@ -275,9 +266,9 @@ export const DashboardPage: React.FC = () => {
           ) : activeTab === 'settings' ? (
              <div className="h-full overflow-y-auto custom-scrollbar pr-2 pt-16">
                <div className="max-w-2xl mx-auto">
-                  <div className={`border p-8 md:p-10 shadow-xl ${isDarkMode ? 'bg-[#133020] border-white/5 shadow-black/20' : 'bg-white border-[#133020]/5 shadow-[#133020]/5'}`}>
-                      <h3 className={`text-xl font-bold mb-8 flex items-center gap-3 ${isDarkMode ? 'text-white' : 'text-[#133020]'}`}>
-                        <div className="p-2 bg-[#FFB347]/20 text-[#133020]">
+                  <div className={`border rounded-[2.5rem] p-8 md:p-10 shadow-xl bg-white border-[#133020]/5 shadow-[#133020]/5`}>
+                      <h3 className={`text-xl font-bold mb-8 flex items-center gap-3 text-[#133020]`}>
+                        <div className="p-2 rounded-xl bg-[#FFB347]/20 text-[#133020]">
                           <User size={24} />
                         </div>
                         Personal Information
@@ -288,7 +279,7 @@ export const DashboardPage: React.FC = () => {
                           <motion.div 
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className={`p-4 text-sm flex items-center gap-3 font-medium ${
+                          className={`p-4 rounded-xl text-sm flex items-center gap-3 font-medium ${
                               message.type === 'success' 
                               ? 'bg-[#046241]/10 text-[#046241] border border-[#046241]/20' 
                               : 'bg-red-50 text-red-600 border border-red-100'
@@ -319,9 +310,9 @@ export const DashboardPage: React.FC = () => {
                             />
                           </div>
 
-                          <div className={`pt-8 border-t ${isDarkMode ? 'border-white/10' : 'border-[#133020]/5'}`}>
-                              <h4 className={`text-base font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-[#133020]'}`}>
-                                <Lock size={18} className={isDarkMode ? 'text-white/40' : 'text-[#133020]/40'} />
+                          <div className={`pt-8 border-t border-[#133020]/5`}>
+                              <h4 className={`text-base font-bold mb-6 flex items-center gap-2 text-[#133020]`}>
+                                <Lock size={18} className={'text-[#133020]/40'} />
                                 Security
                               </h4>
                               <InputField 
@@ -339,7 +330,7 @@ export const DashboardPage: React.FC = () => {
                           <button 
                           type="submit"
                           disabled={updating}
-                          className="bg-[#046241] hover:bg-[#035436] text-white px-8 py-4 font-bold transition-all shadow-lg shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-1 active:translate-y-0"
+                          className="bg-[#046241] hover:bg-[#035436] rounded-2xl text-white px-8 py-4 font-bold transition-all shadow-lg shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-1 active:translate-y-0"
                           >
                           {updating ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
                           </button>
@@ -354,7 +345,7 @@ export const DashboardPage: React.FC = () => {
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`rounded-[2.5rem] ${isDarkMode ? 'bg-[#133020]' : 'bg-[#046241]'} text-white p-8 md:p-12 relative overflow-hidden flex-shrink-0 flex flex-col justify-between transition-colors duration-300 min-h-[380px] mt-16`}
+                className={`rounded-[2.5rem] bg-[#046241] text-white p-8 md:p-12 relative overflow-hidden flex-shrink-0 flex flex-col justify-between transition-colors duration-300 min-h-[380px] mt-16`}
               >
                 {/* Background Animation */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none">
