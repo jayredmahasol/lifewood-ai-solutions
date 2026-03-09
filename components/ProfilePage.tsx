@@ -193,8 +193,8 @@ create policy "Users can update own profile."
   using ( auth.uid() = id );
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('avatars', 'avatars');
+insert into storage.buckets (id, name, public)
+  values ('avatars', 'avatars', true);
 
 create policy "Avatar images are publicly accessible."
   on storage.objects for select
@@ -234,6 +234,11 @@ create policy "Anyone can update their own avatar."
       }
 
       const file = event.target.files[0];
+      
+      // Display immediately
+      const objectUrl = URL.createObjectURL(file);
+      setAvatarUrl(objectUrl);
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -258,15 +263,46 @@ create policy "Anyone can update their own avatar."
       setAvatarUrl(publicUrl);
 
       // Update profile with new avatar URL
+      // Use update instead of upsert to avoid overwriting other fields
       const { error: updateError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
+        .update({
           avatar_url: publicUrl,
           updated_at: new Date().toISOString(),
-        });
+        })
+        .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        // If update fails (e.g. row doesn't exist yet), we upsert with current form data
+        const updates = {
+          id: user.id,
+          last_name: formData.lastName,
+          first_name: formData.firstName,
+          middle_name: formData.middleName,
+          designation: formData.designation,
+          internship_coordinator: formData.internshipCoordinator,
+          school: formData.school,
+          required_hours: formData.requiredHours,
+          educational_background: formData.educationalBackground,
+          gender: formData.gender,
+          dob: formData.dob,
+          age: formData.age,
+          status: formData.status,
+          permanent_address: formData.permanentAddress,
+          present_address: formData.presentAddress,
+          distance: formData.distance,
+          time_travel: formData.timeTravel,
+          email: formData.email,
+          contact_number: formData.contactNumber,
+          emergency_name: formData.emergencyName,
+          emergency_relationship: formData.emergencyRelationship,
+          emergency_address: formData.emergencyAddress,
+          emergency_contact: formData.emergencyContact,
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        };
+        await supabase.from('profiles').upsert(updates);
+      }
       
     } catch (error) {
       console.error('Error uploading image:', error);

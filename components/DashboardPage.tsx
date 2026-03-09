@@ -151,8 +151,24 @@ export const DashboardPage: React.FC = () => {
           return;
         }
         setUser(user);
-        setFullName(user.user_metadata?.full_name || 'User');
-        setEmail(user.email || '');
+        
+        // Fetch profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setFullName(profile.first_name && profile.last_name ? `${profile.first_name} ${profile.last_name}` : profile.full_name || user.user_metadata?.full_name || 'User');
+          setEmail(profile.email || user.email || '');
+          if (profile.avatar_url) {
+            setAvatarUrl(profile.avatar_url);
+          }
+        } else {
+          setFullName(user.user_metadata?.full_name || 'User');
+          setEmail(user.email || '');
+        }
       } catch (error) {
         console.error('Error fetching user:', error);
       } finally {
