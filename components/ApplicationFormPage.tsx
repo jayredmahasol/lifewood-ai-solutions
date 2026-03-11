@@ -69,7 +69,7 @@ export const ApplicationFormPage: React.FC = () => {
         }
       }
 
-      // Try to insert into Supabase. If table doesn't exist, it will fail, but we'll still show success for demo purposes
+      // Try to insert into Supabase
       const { error } = await supabase
         .from('applicants')
         .insert([
@@ -78,7 +78,7 @@ export const ApplicationFormPage: React.FC = () => {
             first_name: formData.firstName,
             last_name: formData.lastName,
             gender: formData.gender,
-            age: parseInt(formData.age),
+            age: parseInt(formData.age) || null,
             email: formData.email,
             phone_number: formData.phone,
             country: formData.country,
@@ -91,14 +91,19 @@ export const ApplicationFormPage: React.FC = () => {
         ]);
         
       if (error) {
-        console.warn('Could not save to database (table might not exist yet):', error);
+        console.error('Supabase insert error:', error);
+        alert(`Failed to submit application: ${error.message}`);
+        setIsSubmitting(false);
+        return;
       }
-    } catch (err) {
-      console.error('Error submitting application:', err);
-    } finally {
+      
       setUniqueId(newUniqueId);
       setIsSubmitting(false);
       setIsSubmitted(true);
+    } catch (err: any) {
+      console.error('Error submitting application:', err);
+      alert(`An error occurred while submitting your application: ${err.message || 'Unknown error'}`);
+      setIsSubmitting(false);
     }
   };
 
