@@ -84,9 +84,7 @@ export const ApplicationFormPage: React.FC = () => {
             country: formData.country,
             current_address: formData.address,
             position_applied: formData.position,
-            status: 'Pending Review',
-            cv_name: fileName,
-            cv_url: cvUrl
+            status: 'Pending Review'
           }
         ]);
         
