@@ -59,16 +59,21 @@ export const CareersPage: React.FC = () => {
              initial={{ opacity: 0, scale: 0.9 }}
              animate={{ opacity: 1, scale: 1 }}
              transition={{ duration: 0.8, delay: 0.4 }}
+             className="flex flex-col sm:flex-row gap-4"
            >
               <a 
-                href="https://application-form-ph.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative px-8 py-4 bg-[#133020] text-white rounded-full font-bold text-lg overflow-hidden flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                href="#application-form"
+                className="group relative px-8 py-4 bg-[#133020] text-white rounded-full font-bold text-lg overflow-hidden flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
               >
                  <span className="relative z-10 group-hover:text-[#f5eedb] transition-colors duration-300">Apply Now</span>
                  <ArrowUpRight className="relative z-10 group-hover:text-[#f5eedb] transition-colors duration-300" size={20} />
                  <div className="absolute inset-0 bg-[#046241] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              </a>
+              <a 
+                href="#application-status"
+                className="px-8 py-4 bg-white text-[#133020] border border-[#133020]/20 rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#F9F7F7] transition-all shadow-sm hover:shadow-md"
+              >
+                 View Application Status
               </a>
            </motion.div>
         </div>
@@ -235,9 +240,7 @@ export const CareersPage: React.FC = () => {
                </p>
                
                <a 
-                 href="https://application-form-ph.vercel.app/"
-                 target="_blank"
-                 rel="noopener noreferrer"
+                 href="#application-form"
                  className="inline-flex items-center gap-3 px-8 py-4 bg-[#FFB347] text-[#133020] rounded-full font-bold text-lg hover:bg-[#FFC370] transition-all hover:scale-105 shadow-lg"
                >
                   Join Us Now <ArrowRight size={20} />

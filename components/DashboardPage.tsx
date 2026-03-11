@@ -268,8 +268,12 @@ export const DashboardPage: React.FC = () => {
               href="#profile"
               className={`flex items-center gap-3 px-4 py-2 border rounded-full backdrop-blur-sm transition-all hover:bg-opacity-80 hover:scale-105 cursor-pointer bg-[#133020]/5 border-[#133020]/10`}
             >
-               <div className="w-8 h-8 rounded-full bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold text-xs">
-                 {fullName.charAt(0).toUpperCase()}
+               <div className="w-8 h-8 rounded-full bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold text-xs overflow-hidden">
+                 {avatarUrl ? (
+                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                 ) : (
+                   fullName.charAt(0).toUpperCase()
+                 )}
                </div>
                <span className={`text-sm font-bold text-[#133020]`}>{fullName}</span>
             </a>
@@ -473,8 +477,12 @@ export const DashboardPage: React.FC = () => {
 
                         <div className="w-full bg-[#133020] rounded-[1.5rem] p-4 flex items-center justify-between relative z-10 border border-white/5 group-hover:border-white/10 transition-colors">
                            <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
-                               {fullName.charAt(0).toUpperCase()}
+                             <div className="w-10 h-10 rounded-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm overflow-hidden">
+                               {avatarUrl ? (
+                                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                               ) : (
+                                 fullName.charAt(0).toUpperCase()
+                               )}
                              </div>
                              <div>
                                <h4 className="text-white text-sm font-bold leading-tight">{fullName}</h4>

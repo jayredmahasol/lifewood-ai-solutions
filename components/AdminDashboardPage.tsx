@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { 
   Users, Search, Filter, MoreVertical, ShieldCheck, 
-  User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2
+  User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2, BarChart2, PieChart as PieChartIcon
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export const AdminDashboardPage = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -118,6 +119,32 @@ export const AdminDashboardPage = () => {
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
+  // Analytics Data
+  const schoolData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    users.forEach(u => {
+      const school = u.school || 'Unknown';
+      counts[school] = (counts[school] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Top 5 schools
+  }, [users]);
+
+  const designationData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    users.forEach(u => {
+      const desig = u.designation || 'Intern';
+      counts[desig] = (counts[desig] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [users]);
+
+  const COLORS = ['#046241', '#FFB347', '#133020', '#ccff00', '#8E9299'];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5eedb] flex items-center justify-center">
@@ -130,14 +157,28 @@ export const AdminDashboardPage = () => {
     <div className="min-h-screen bg-[#f5eedb] font-sans flex flex-col">
       {/* Admin Header */}
       <header className="bg-[#133020] text-white px-8 py-4 flex items-center justify-between sticky top-0 z-50 shadow-md">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-[#FFB347] rounded-xl flex items-center justify-center text-[#133020]">
-            <ShieldCheck size={24} />
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1">
+              <img src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png" alt="Lifewood Logo" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold leading-tight">Admin Dashboard</h1>
+              <p className="text-white/60 text-xs">Manage Lifewood Interns</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold leading-tight">Admin Dashboard</h1>
-            <p className="text-white/60 text-xs">Manage Lifewood Interns</p>
-          </div>
+          
+          <nav className="hidden md:flex items-center gap-2 ml-8">
+            <a href="#admin-dashboard" className="px-4 py-2 bg-white/10 text-white rounded-lg font-medium text-sm transition-colors">
+              Interns
+            </a>
+            <a href="#admin-applicants" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
+              Applicants
+            </a>
+            <a href="#admin-notifications" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
+              Notifications
+            </a>
+          </nav>
         </div>
         
         <div className="flex items-center gap-6">
@@ -209,6 +250,100 @@ export const AdminDashboardPage = () => {
               <h3 className="text-4xl font-bold text-white">
                 {users.filter(u => new Date(u.updated_at || Date.now()) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
               </h3>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Bar Chart: Users by School */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                <BarChart2 size={20} />
+              </div>
+              <h3 className="text-lg font-bold text-[#133020]">Top Schools</h3>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={schoolData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#13302010" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#13302080' }} 
+                    tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#13302080' }} 
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#13302005' }}
+                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Bar dataKey="count" fill="#046241" radius={[4, 4, 0, 0]} barSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Pie Chart: Users by Designation */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
+                <PieChartIcon size={20} />
+              </div>
+              <h3 className="text-lg font-bold text-[#133020]">Designations</h3>
+            </div>
+            <div className="h-[300px] w-full flex items-center justify-center">
+              {designationData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={designationData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={110}
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {designationData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-[#133020]/40 text-sm">No data available</div>
+              )}
+            </div>
+            {/* Custom Legend */}
+            <div className="flex flex-wrap justify-center gap-4 mt-2">
+              {designationData.slice(0, 5).map((entry, index) => (
+                <div key={index} className="flex items-center gap-2 text-xs text-[#133020]/70">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                  <span>{entry.name} ({entry.value})</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>

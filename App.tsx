@@ -17,6 +17,8 @@ import { TypeCVerticalLLMDataPage } from './components/TypeCVerticalLLMDataPage'
 import { TypeDAIGCPage } from './components/TypeDAIGCPage';
 import { PhilanthropyPage } from './components/PhilanthropyPage';
 import { ValidationPage } from './components/ValidationPage';
+import { ApplicationFormPage } from './components/ApplicationFormPage';
+import { ApplicationStatusPage } from './components/ApplicationStatusPage';
 
 import { CareersPage } from './components/CareersPage';
 import { ContactUsPage } from './components/ContactUsPage';
@@ -24,6 +26,8 @@ import { InternalNewsPage } from './components/InternalNewsPage';
 import { LoginPage } from './components/LoginPage';
 import { DashboardPage } from './components/DashboardPage';
 import { AdminDashboardPage } from './components/AdminDashboardPage';
+import { AdminApplicantsPage } from './components/AdminApplicantsPage';
+import { AdminNotificationsPage } from './components/AdminNotificationsPage';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -52,15 +56,19 @@ function App() {
   const isImpactPage = currentRoute === '#impact';
   const isValidationPage = currentRoute === '#validation';
   const isCareersPage = currentRoute === '#careers';
+  const isApplicationFormPage = currentRoute === '#application-form';
+  const isApplicationStatusPage = currentRoute === '#application-status';
   const isContactPage = currentRoute === '#contact';
   const isNewsPage = currentRoute === '#news';
   const isLoginPage = currentRoute === '#login';
   const isAdminDashboardPage = currentRoute === '#admin-dashboard';
+  const isAdminApplicantsPage = currentRoute === '#admin-applicants';
+  const isAdminNotificationsPage = currentRoute === '#admin-notifications';
   const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings';
 
   return (
     <div className="min-h-screen bg-lifewood-beige text-lifewood-darkGreen selection:bg-lifewood-primaryGreen selection:text-white font-sans">
-      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && <Navbar currentRoute={currentRoute} />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && <Navbar currentRoute={currentRoute} />}
       
       <main>
         <AnimatePresence mode="wait">
@@ -77,6 +85,10 @@ function App() {
               <LoginPage />
             ) : isAdminDashboardPage ? (
               <AdminDashboardPage />
+            ) : isAdminApplicantsPage ? (
+              <AdminApplicantsPage />
+            ) : isAdminNotificationsPage ? (
+              <AdminNotificationsPage />
             ) : isDashboardPage ? (
               <DashboardPage />
             ) : isAIServicesPage ? (
@@ -99,6 +111,10 @@ function App() {
               <PhilanthropyPage />
             ) : isCareersPage ? (
               <CareersPage />
+            ) : isApplicationFormPage ? (
+              <ApplicationFormPage />
+            ) : isApplicationStatusPage ? (
+              <ApplicationStatusPage />
             ) : isContactPage ? (
               <ContactUsPage />
             ) : isNewsPage ? (
@@ -130,7 +146,7 @@ function App() {
         </AnimatePresence>
       </main>
       
-      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && <Footer />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && <Footer />}
     </div>
   );
 }

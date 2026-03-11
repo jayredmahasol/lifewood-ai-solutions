@@ -19,6 +19,14 @@ const schools = [
   { name: 'University of San Jose Recoletos', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/University_of_San_Jose-Recoletos_logo.png/220px-University_of_San_Jose-Recoletos_logo.png' }
 ];
 
+const programs = [
+  { name: 'BS Information Technology', logo: 'https://img.icons8.com/color/96/source-code.png' },
+  { name: 'BS Psychology', logo: 'https://img.icons8.com/color/96/brain--v1.png' },
+  { name: 'BS Marketing Management', logo: 'https://img.icons8.com/color/96/commercial.png' },
+  { name: 'BS General Business Management', logo: 'https://img.icons8.com/color/96/business.png' },
+  { name: 'BS Finance', logo: 'https://img.icons8.com/color/96/money-bag.png' }
+];
+
 const InputGroup = ({ label, icon: Icon, children, className = "" }: any) => (
   <div className={`space-y-2 ${className}`}>
     <label className="text-xs font-bold uppercase tracking-wider text-[#133020]/50 ml-1 flex items-center gap-2">
@@ -56,6 +64,9 @@ export const ProfilePage = () => {
   });
 
   const [setupRequired, setSetupRequired] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordUpdating, setPasswordUpdating] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -363,6 +374,33 @@ create policy "Anyone can update their own avatar."
     }
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    setPasswordUpdating(true);
+    setPasswordMessage({ type: '', text: '' });
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+      
+      setPasswordMessage({ type: 'success', text: 'Password updated successfully!' });
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      setPasswordMessage({ type: 'error', text: error.message || 'Failed to update password.' });
+    } finally {
+      setPasswordUpdating(false);
+    }
+  };
+
   if (loading) return <div className="h-full flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-[#046241] border-t-transparent rounded-full"></div></div>;
 
   return (
@@ -473,7 +511,17 @@ create policy "Anyone can update their own avatar."
                   <Briefcase size={18} />
                   <span className="text-xs font-bold uppercase tracking-wider">School</span>
                 </div>
-                <p className="font-medium text-lg leading-tight">{formData.school || 'Not set'}</p>
+                <div className="flex items-center gap-3">
+                  {formData.school && schools.find(s => s.name === formData.school)?.logo && (
+                    <img 
+                      src={schools.find(s => s.name === formData.school)?.logo} 
+                      alt="School Logo" 
+                      className="w-8 h-8 object-contain bg-white rounded-full p-1"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <p className="font-medium text-lg leading-tight">{formData.school || 'Not set'}</p>
+                </div>
               </div>
 
               <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
@@ -574,7 +622,7 @@ create policy "Anyone can update their own avatar."
                         </select>
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
                           {formData.school ? (
-                            <img src={schools.find(s => s.name === formData.school)?.logo} alt="Logo" className="w-full h-full object-contain" />
+                            <img src={schools.find(s => s.name === formData.school)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                           ) : (
                             <GraduationCap size={20} className="text-[#133020]/30" />
                           )}
@@ -593,7 +641,25 @@ create policy "Anyone can update their own avatar."
                       <TextInput type="number" name="requiredHours" value={formData.requiredHours} onChange={handleChange} placeholder="e.g. 600" />
                     </InputGroup>
                     <InputGroup label="Educational Background" icon={GraduationCap}>
-                      <TextInput name="educationalBackground" value={formData.educationalBackground} onChange={handleChange} placeholder="BS Computer Science" />
+                      <div className="relative">
+                        <select 
+                          name="educationalBackground" 
+                          value={formData.educationalBackground} 
+                          onChange={handleChange} 
+                          className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
+                        >
+                          <option value="">Select Program</option>
+                          {programs.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                        </select>
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
+                          {formData.educationalBackground ? (
+                            <img src={programs.find(p => p.name === formData.educationalBackground)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                          ) : (
+                            <GraduationCap size={20} className="text-[#133020]/30" />
+                          )}
+                        </div>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#133020]/30 pointer-events-none" size={16} />
+                      </div>
                     </InputGroup>
                   </div>
                 </div>
@@ -649,6 +715,43 @@ create policy "Anyone can update their own avatar."
                     <InputGroup label="Address" icon={MapPin}>
                       <TextInput name="emergencyAddress" value={formData.emergencyAddress} onChange={handleChange} placeholder="Full Address" />
                     </InputGroup>
+                  </div>
+                </div>
+              </Step>
+
+              {/* Step 5: Account Settings */}
+              <Step>
+                <div className="max-w-4xl mx-auto">
+                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Account Settings</h3>
+                  <p className="text-[#133020]/60 mb-8">Update your password and account security.</p>
+
+                  <div className="bg-white p-6 rounded-2xl border border-[#133020]/10 max-w-md">
+                    <h4 className="text-lg font-bold text-[#133020] mb-4">Change Password</h4>
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      <InputGroup label="New Password">
+                        <TextInput 
+                          type="password" 
+                          value={newPassword} 
+                          onChange={(e: any) => setNewPassword(e.target.value)} 
+                          placeholder="Enter new password" 
+                        />
+                      </InputGroup>
+                      
+                      {passwordMessage.text && (
+                        <div className={`p-3 rounded-xl text-sm ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                          {passwordMessage.text}
+                        </div>
+                      )}
+
+                      <button 
+                        type="submit"
+                        disabled={passwordUpdating || !newPassword}
+                        className="w-full py-3 bg-[#046241] text-white rounded-xl font-medium hover:bg-[#133020] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {passwordUpdating ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        Update Password
+                      </button>
+                    </form>
                   </div>
                 </div>
               </Step>
