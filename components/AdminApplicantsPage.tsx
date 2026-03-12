@@ -152,15 +152,20 @@ export const AdminApplicantsPage = () => {
         }
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('applicants')
         .update({
           status: editFormData.status,
           rejection_reason: editFormData.status === 'Failed' ? editFormData.rejection_reason : null
         })
-        .eq('id', selectedApplicant.id);
+        .eq('id', selectedApplicant.id)
+        .select();
 
       if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error("Update failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing updates.");
+      }
 
       // Update local state
       setApplicants(prev => prev.map(a => a.id === selectedApplicant.id ? { ...a, ...editFormData } : a));
@@ -184,12 +189,17 @@ export const AdminApplicantsPage = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('applicants')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
 
       if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
+      }
 
       setApplicants(prev => prev.filter(a => a.id !== id));
       addNotification('info', 'Applicant Deleted', `The application for ${name} was successfully deleted.`);
@@ -499,19 +509,20 @@ export const AdminApplicantsPage = () => {
                   )}
 
                   {generatedCredentials && (
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="mt-4 p-5 bg-green-50 border border-green-200 rounded-xl">
                       <h4 className="text-sm font-bold text-green-800 mb-2">Account Created Successfully!</h4>
-                      <p className="text-xs text-green-700 mb-3">Please securely share these temporary credentials with the applicant. They will be prompted to change their password upon logging in.</p>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center bg-white p-2 rounded border border-green-100">
-                          <span className="text-xs font-bold text-gray-500">Email:</span>
-                          <span className="text-sm font-mono text-gray-800">{generatedCredentials.email}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-white p-2 rounded border border-green-100">
-                          <span className="text-xs font-bold text-gray-500">Password:</span>
-                          <span className="text-sm font-mono text-gray-800">{generatedCredentials.password}</span>
-                        </div>
-                      </div>
+                      <p className="text-xs text-green-700 mb-4">
+                        The account has been created. Please email the temporary credentials to the applicant. Supabase has automatically sent them a verification email.
+                      </p>
+                      <a
+                        href={`mailto:${generatedCredentials.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${generatedCredentials.email}\nPassword: ${generatedCredentials.password}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
+                        className="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        Email Credentials to Applicant
+                      </a>
                     </div>
                   )}
                   

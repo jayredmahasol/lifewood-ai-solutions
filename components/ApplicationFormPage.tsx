@@ -57,10 +57,16 @@ export const ApplicationFormPage: React.FC = () => {
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('resumes')
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
           
         if (uploadError) {
-          console.warn('Could not upload file (bucket might not exist):', uploadError);
+          console.error('Upload error details:', uploadError);
+          alert(`Failed to upload resume: ${uploadError.message}. Please check your storage bucket permissions.`);
+          setIsSubmitting(false);
+          return;
         } else if (uploadData) {
           const { data: publicUrlData } = supabase.storage
             .from('resumes')
@@ -70,7 +76,7 @@ export const ApplicationFormPage: React.FC = () => {
       }
 
       // Try to insert into Supabase
-      const { error } = await supabase
+      const { data: insertData, error } = await supabase
         .from('applicants')
         .insert([
           {
@@ -84,15 +90,22 @@ export const ApplicationFormPage: React.FC = () => {
             country: formData.country,
             current_address: formData.address,
             position_applied: formData.position,
-            status: 'Pending Review'
+            status: 'Pending Review',
+            cv_name: fileName,
+            cv_url: cvUrl
           }
-        ]);
+        ])
+        .select();
         
       if (error) {
         console.error('Supabase insert error:', error);
         alert(`Failed to submit application: ${error.message}`);
         setIsSubmitting(false);
         return;
+      }
+      
+      if (!insertData || insertData.length === 0) {
+        alert("Application submitted, but the database didn't return the saved record. This might be due to Row Level Security (RLS) policies.");
       }
       
       setUniqueId(newUniqueId);
