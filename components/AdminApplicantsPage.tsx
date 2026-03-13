@@ -13,12 +13,23 @@ export const AdminApplicantsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
 
+  // Filter State
+  const [filterDate, setFilterDate] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+
   // Modal State
   const [selectedApplicant, setSelectedApplicant] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [generatedCredentials, setGeneratedCredentials] = useState<{email: string, password: string} | null>(null);
+
+  // Selection & Delete State
+  const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, isBulk: boolean, id?: string, name?: string}>({isOpen: false, isBulk: false});
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const rejectionTemplates = [
     "Thank you for your interest. Unfortunately, we have decided to move forward with other candidates whose qualifications better match our current needs.",
@@ -79,13 +90,11 @@ export const AdminApplicantsPage = () => {
     setEditFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const generateTempPassword = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
+  const generateTempPassword = (applicant: any) => {
+    const firstName = applicant.first_name ? applicant.first_name.replace(/\s+/g, '') : 'User';
+    const lastName = applicant.last_name ? applicant.last_name.replace(/\s+/g, '') : '';
+    const idPart = applicant.unique_id ? applicant.unique_id.slice(-4) : '1234';
+    return `${firstName}${lastName}@${idPart}!`;
   };
 
   const addNotification = (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => {
@@ -119,7 +128,7 @@ export const AdminApplicantsPage = () => {
           // We still want to update the applicant status, so we don't return here anymore
         } else {
           // Generate temporary credentials
-          const tempPassword = generateTempPassword();
+          const tempPassword = generateTempPassword(selectedApplicant);
           
           // Create auth user
           const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -182,42 +191,97 @@ export const AdminApplicantsPage = () => {
     }
   };
 
-  const handleDeleteApplicant = async (e: React.MouseEvent, id: string, name: string) => {
+  const handleDeleteApplicant = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete the application for ${name}? This action cannot be undone.`)) {
-      return;
-    }
+    setDeleteModal({ isOpen: true, isBulk: false, id, name });
+  };
 
-    try {
-      const { data, error } = await supabase
-        .from('applicants')
-        .delete()
-        .eq('id', id)
-        .select();
+  const handleBulkDeleteClick = () => {
+    setDeleteModal({ isOpen: true, isBulk: true });
+  };
 
-      if (error) throw error;
-      
-      if (!data || data.length === 0) {
-        throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
-      }
-
-      setApplicants(prev => prev.filter(a => a.id !== id));
-      addNotification('info', 'Applicant Deleted', `The application for ${name} was successfully deleted.`);
-    } catch (err: any) {
-      console.error('Error deleting applicant:', err);
-      addNotification('error', 'Delete Failed', `Failed to delete applicant ${name}: ${err.message || 'Unknown error'}`);
-      alert(`Failed to delete applicant: ${err.message || 'Unknown error'}`);
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      const currentIds = currentApplicants.map(a => a.id);
+      setSelectedApplicants(prev => {
+        const newSelection = new Set([...prev, ...currentIds]);
+        return Array.from(newSelection);
+      });
+    } else {
+      const currentIds = currentApplicants.map(a => a.id);
+      setSelectedApplicants(prev => prev.filter(id => !currentIds.includes(id)));
     }
   };
 
-  // Filter applicants based on search
-  const filteredApplicants = applicants.filter(applicant => 
-    (applicant.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (applicant.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (applicant.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (applicant.unique_id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-    (applicant.position_applied?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-  );
+  const handleSelectApplicant = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
+    e.stopPropagation();
+    if (e.target.checked) {
+      setSelectedApplicants(prev => [...prev, id]);
+    } else {
+      setSelectedApplicants(prev => prev.filter(aId => aId !== id));
+    }
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      if (deleteModal.isBulk) {
+        const { data, error } = await supabase
+          .from('applicants')
+          .delete()
+          .in('id', selectedApplicants)
+          .select();
+
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
+        }
+
+        setApplicants(prev => prev.filter(a => !selectedApplicants.includes(a.id)));
+        addNotification('info', 'Applicants Deleted', `Successfully deleted ${selectedApplicants.length} applicants.`);
+        setSelectedApplicants([]);
+      } else if (deleteModal.id) {
+        const { data, error } = await supabase
+          .from('applicants')
+          .delete()
+          .eq('id', deleteModal.id)
+          .select();
+
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
+        }
+
+        setApplicants(prev => prev.filter(a => a.id !== deleteModal.id));
+        addNotification('info', 'Applicant Deleted', `The application for ${deleteModal.name} was successfully deleted.`);
+        setSelectedApplicants(prev => prev.filter(id => id !== deleteModal.id));
+      }
+      setDeleteModal({ isOpen: false, isBulk: false });
+      handleModalClose();
+    } catch (err: any) {
+      console.error('Error deleting applicant(s):', err);
+      addNotification('error', 'Delete Failed', `Failed to delete applicant(s): ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Filter applicants based on search and filters
+  const filteredApplicants = applicants.filter(applicant => {
+    const matchesSearch = (applicant.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (applicant.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (applicant.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (applicant.unique_id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (applicant.position_applied?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+      
+    const matchesDate = filterDate ? (applicant.created_at && applicant.created_at.startsWith(filterDate)) : true;
+    const matchesPosition = filterPosition ? applicant.position_applied === filterPosition : true;
+    const matchesStatus = filterStatus ? applicant.status === filterStatus : true;
+
+    return matchesSearch && matchesDate && matchesPosition && matchesStatus;
+  });
 
   // Pagination logic
   const indexOfLastApplicant = currentPage * usersPerPage;
@@ -299,6 +363,103 @@ export const AdminApplicantsPage = () => {
                   className="pl-10 pr-4 py-2.5 bg-white border border-[#133020]/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#046241]/20 w-full md:w-64 transition-all"
                 />
               </div>
+              
+              {selectedApplicants.length > 0 && (
+                <button
+                  onClick={handleBulkDeleteClick}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                >
+                  <Trash2 size={18} />
+                  Delete Selected ({selectedApplicants.length})
+                </button>
+              )}
+              
+              <div className="relative">
+                <button 
+                  onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors border ${
+                    isFilterMenuOpen || filterDate || filterPosition || filterStatus
+                      ? 'bg-[#046241] text-white border-[#046241]' 
+                      : 'bg-white text-[#133020] border-[#133020]/10 hover:bg-[#F9F7F7]'
+                  }`}
+                >
+                  <Filter size={18} />
+                  Filter
+                  {(filterDate || filterPosition || filterStatus) && (
+                    <span className="flex items-center justify-center w-5 h-5 bg-white text-[#046241] rounded-full text-xs font-bold ml-1">
+                      {[filterDate, filterPosition, filterStatus].filter(Boolean).length}
+                    </span>
+                  )}
+                </button>
+                
+                <AnimatePresence>
+                  {isFilterMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-[#133020]/10 p-5 z-50"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-bold text-[#133020]">Filters</h3>
+                        <button 
+                          onClick={() => {
+                            setFilterDate('');
+                            setFilterPosition('');
+                            setFilterStatus('');
+                          }}
+                          className="text-xs text-[#046241] font-medium hover:underline"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#133020]/60 mb-1.5 uppercase tracking-wider">Date Applied</label>
+                          <input 
+                            type="date" 
+                            value={filterDate}
+                            onChange={(e) => setFilterDate(e.target.value)}
+                            className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-3 py-2 text-sm text-[#133020] outline-none focus:border-[#046241] focus:ring-1 focus:ring-[#046241]/20"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-semibold text-[#133020]/60 mb-1.5 uppercase tracking-wider">Position</label>
+                          <select 
+                            value={filterPosition}
+                            onChange={(e) => setFilterPosition(e.target.value)}
+                            className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-3 py-2 text-sm text-[#133020] outline-none focus:border-[#046241] focus:ring-1 focus:ring-[#046241]/20"
+                          >
+                            <option value="">All Positions</option>
+                            {Array.from(new Set(applicants.map(a => a.position_applied).filter(Boolean))).map(pos => (
+                              <option key={pos as string} value={pos as string}>{pos as string}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-xs font-semibold text-[#133020]/60 mb-1.5 uppercase tracking-wider">Status</label>
+                          <select 
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-3 py-2 text-sm text-[#133020] outline-none focus:border-[#046241] focus:ring-1 focus:ring-[#046241]/20"
+                          >
+                            <option value="">All Statuses</option>
+                            <option value="Pending Review">Pending Review</option>
+                            <option value="AI Pre-Screening">AI Pre-Screening</option>
+                            <option value="Post-Screening">Post-Screening</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Hired">Hired</option>
+                            <option value="Failed">Failed</option>
+                          </select>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </header>
 
@@ -308,12 +469,19 @@ export const AdminApplicantsPage = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F9F7F7] text-[#133020]/60 text-xs uppercase tracking-wider border-b border-[#133020]/5">
+                    <th className="px-6 py-4 font-semibold w-12">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                        checked={currentApplicants.length > 0 && currentApplicants.every(a => selectedApplicants.includes(a.id))}
+                        onChange={handleSelectAll}
+                      />
+                    </th>
                     <th className="px-6 py-4 font-semibold">Applicant</th>
                     <th className="px-6 py-4 font-semibold">Unique ID</th>
                     <th className="px-6 py-4 font-semibold">Position</th>
                     <th className="px-6 py-4 font-semibold">Date Applied</th>
                     <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#133020]/5">
@@ -321,9 +489,17 @@ export const AdminApplicantsPage = () => {
                     currentApplicants.map((applicant) => (
                       <tr 
                         key={applicant.id} 
-                        className="hover:bg-[#F9F7F7]/50 transition-colors cursor-pointer group"
+                        className={`hover:bg-[#F9F7F7]/50 transition-colors cursor-pointer group ${selectedApplicants.includes(applicant.id) ? 'bg-[#046241]/5' : ''}`}
                         onClick={() => handleRowClick(applicant)}
                       >
+                        <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                            checked={selectedApplicants.includes(applicant.id)}
+                            onChange={(e) => handleSelectApplicant(e, applicant.id)}
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241] font-bold text-sm">
@@ -357,25 +533,11 @@ export const AdminApplicantsPage = () => {
                             {applicant.status || 'Pending Review'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100">
-                            <button className="p-2 text-[#133020]/40 hover:text-[#046241] hover:bg-[#046241]/10 rounded-lg transition-colors">
-                              <MoreVertical size={18} />
-                            </button>
-                            <button 
-                              onClick={(e) => handleDeleteApplicant(e, applicant.id, `${applicant.first_name} ${applicant.last_name}`)}
-                              className="p-2 text-[#133020]/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Applicant"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-[#133020]/50">
+                      <td colSpan={7} className="px-6 py-12 text-center text-[#133020]/50">
                         No applicants found matching your search.
                       </td>
                     </tr>
@@ -508,14 +670,22 @@ export const AdminApplicantsPage = () => {
                     </div>
                   )}
 
-                  {generatedCredentials && (
+                  {(generatedCredentials || selectedApplicant.status === 'Hired') && (
                     <div className="mt-4 p-5 bg-green-50 border border-green-200 rounded-xl">
-                      <h4 className="text-sm font-bold text-green-800 mb-2">Account Created Successfully!</h4>
+                      <h4 className="text-sm font-bold text-green-800 mb-2">
+                        {generatedCredentials ? 'Account Created Successfully!' : 'Temporary Account Credentials'}
+                      </h4>
                       <p className="text-xs text-green-700 mb-4">
-                        The account has been created. Please email the temporary credentials to the applicant. Supabase has automatically sent them a verification email.
+                        {generatedCredentials 
+                          ? 'The account has been created. Please email the temporary credentials to the applicant. Supabase has automatically sent them a verification email.'
+                          : 'This applicant has a temporary account. You can email them their credentials if they forgot them.'}
                       </p>
+                      <div className="mb-4 bg-white p-3 rounded border border-green-200 font-mono text-sm text-green-800">
+                        <div><strong>Email:</strong> {selectedApplicant.email}</div>
+                        <div><strong>Password:</strong> {generateTempPassword(selectedApplicant)}</div>
+                      </div>
                       <a
-                        href={`mailto:${generatedCredentials.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${generatedCredentials.email}\nPassword: ${generatedCredentials.password}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
+                        href={`mailto:${selectedApplicant.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${selectedApplicant.email}\nPassword: ${generateTempPassword(selectedApplicant)}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
                         className="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -631,6 +801,76 @@ export const AdminApplicantsPage = () => {
                   </div>
                 </div>
 
+                {/* Danger Zone */}
+                <div className="pt-6 border-t border-red-100 mt-6">
+                  <h5 className="text-sm font-bold uppercase tracking-wider text-red-500 mb-4 flex items-center gap-2">
+                    <Trash2 size={16} /> Danger Zone
+                  </h5>
+                  <button 
+                    onClick={(e) => {
+                      handleDeleteApplicant(e, selectedApplicant.id, `${selectedApplicant.first_name} ${selectedApplicant.last_name}`);
+                      handleModalClose();
+                    }}
+                    className="w-full py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={18} />
+                    Delete Applicant
+                  </button>
+                </div>
+
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteModal.isOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-[#133020]/40 backdrop-blur-sm z-50"
+              onClick={() => setDeleteModal({ isOpen: false, isBulk: false })}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-3xl shadow-2xl z-50 overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-4">
+                  <Trash2 size={24} />
+                </div>
+                <h3 className="text-xl font-bold text-[#133020] mb-2">
+                  {deleteModal.isBulk ? 'Delete Selected Applicants' : 'Delete Applicant'}
+                </h3>
+                <p className="text-[#133020]/60 mb-6">
+                  {deleteModal.isBulk 
+                    ? `Are you sure you want to delete ${selectedApplicants.length} selected applicants? This action cannot be undone.`
+                    : `Are you sure you want to delete the application for ${deleteModal.name}? This action cannot be undone.`
+                  }
+                </p>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setDeleteModal({ isOpen: false, isBulk: false })}
+                    disabled={isDeleting}
+                    className="flex-1 py-3 px-4 rounded-xl font-medium border border-[#133020]/10 text-[#133020] hover:bg-[#F9F7F7] transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={confirmDelete}
+                    disabled={isDeleting}
+                    className="flex-1 py-3 px-4 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>
