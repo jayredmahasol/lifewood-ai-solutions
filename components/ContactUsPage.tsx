@@ -37,7 +37,7 @@ export const ContactUsPage: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from('feedback')
+        .from('feedback_messages')
         .insert([
           {
             first_name: formData.firstName,
@@ -50,7 +50,11 @@ export const ContactUsPage: React.FC = () => {
       if (error) {
         // If the table doesn't exist, we'll catch it here
         if (error.code === '42P01') {
-           throw new Error('The "feedback" table does not exist in the database. Please create it in Supabase.');
+           throw new Error('The "feedback_messages" table does not exist in the database. Please create it in Supabase.');
+        }
+        // If RLS is enabled but no policies exist
+        if (error.code === '42501' || error.message.includes('row-level security')) {
+           throw new Error('Permission denied. Please disable RLS or add an INSERT policy for the "feedback_messages" table in Supabase.');
         }
         throw error;
       }

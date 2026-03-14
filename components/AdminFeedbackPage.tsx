@@ -32,14 +32,17 @@ export const AdminFeedbackPage = () => {
     const fetchFeedback = async () => {
       try {
         const { data, error } = await supabase
-          .from('feedback')
+          .from('feedback_messages')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
           // If table doesn't exist, we just show empty array
           if (error.code === '42P01') {
-            console.warn('Feedback table does not exist yet.');
+            console.warn('feedback_messages table does not exist yet.');
+            setFeedback([]);
+          } else if (error.code === '42501' || error.message.includes('row-level security')) {
+            console.error('Permission denied. Please disable RLS or add a SELECT policy for the "feedback_messages" table in Supabase.');
             setFeedback([]);
           } else {
             console.error('Error fetching feedback:', error);
@@ -109,7 +112,7 @@ export const AdminFeedbackPage = () => {
     try {
       if (deleteModal.isBulk) {
         const { error } = await supabase
-          .from('feedback')
+          .from('feedback_messages')
           .delete()
           .in('id', selectedMessages);
 
@@ -119,7 +122,7 @@ export const AdminFeedbackPage = () => {
         setSelectedMessages([]);
       } else if (deleteModal.id) {
         const { error } = await supabase
-          .from('feedback')
+          .from('feedback_messages')
           .delete()
           .eq('id', deleteModal.id);
 
