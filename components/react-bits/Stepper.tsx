@@ -193,6 +193,7 @@ interface SlideTransitionProps {
   children: ReactNode;
   direction: number;
   onHeightReady: (height: number) => void;
+  key?: React.Key;
 }
 
 function SlideTransition({ children, direction, onHeightReady }: SlideTransitionProps) {
@@ -308,7 +309,9 @@ function StepConnector({ isComplete }: StepConnectorProps) {
   );
 }
 
-interface CheckIconProps extends React.SVGProps<SVGSVGElement> {}
+interface CheckIconProps extends React.SVGProps<SVGSVGElement> {
+  className?: string;
+}
 
 function CheckIcon(props: CheckIconProps) {
   return (

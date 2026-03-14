@@ -111,7 +111,7 @@ export const AdminNotificationsPage = () => {
           
           <nav className="hidden md:flex items-center gap-2 ml-8">
             <a href="#admin-dashboard" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
-              Interns
+              Users
             </a>
             <a href="#admin-applicants" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
               Applicants
@@ -123,6 +123,9 @@ export const AdminNotificationsPage = () => {
                   {unreadCount}
                 </span>
               )}
+            </a>
+            <a href="#admin-feedback" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
+              Feedback
             </a>
           </nav>
         </div>

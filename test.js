@@ -8,7 +8,7 @@ const supabaseKey = env.match(/VITE_SUPABASE_ANON_KEY=(.*)/)[1]
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function test() {
-  const { data, error } = await supabase.from('profiles').select('*').limit(1)
+  const { data, error } = await supabase.from('applicants').select('*').limit(1)
   console.log(Object.keys(data[0] || {}))
 }
 test()

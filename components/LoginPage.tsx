@@ -56,12 +56,28 @@ export const LoginPage: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
+      
+      // Check if user is suspended
+      if (authData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('website')
+          .eq('id', authData.user.id)
+          .single();
+          
+        if (profile && profile.website === 'suspended') {
+          await supabase.auth.signOut();
+          setError('Your account has been suspended. Please contact the administrator.');
+          setLoading(false);
+          return;
+        }
+      }
       
       localStorage.removeItem('isAdmin');
       // Redirect or handle successful login

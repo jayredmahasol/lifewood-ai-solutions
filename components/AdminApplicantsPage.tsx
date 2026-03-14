@@ -90,11 +90,13 @@ export const AdminApplicantsPage = () => {
     setEditFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const generateTempPassword = (applicant: any) => {
-    const firstName = applicant.first_name ? applicant.first_name.replace(/\s+/g, '') : 'User';
-    const lastName = applicant.last_name ? applicant.last_name.replace(/\s+/g, '') : '';
-    const idPart = applicant.unique_id ? applicant.unique_id.slice(-4) : '1234';
-    return `${firstName}${lastName}@${idPart}!`;
+  const generateTempPassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   };
 
   const addNotification = (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => {
@@ -114,6 +116,8 @@ export const AdminApplicantsPage = () => {
   const handleSaveApplicant = async () => {
     setSaving(true);
     try {
+      let tempPasswordToSave: string | null = null;
+      
       // Handle Hired status
       if (editFormData.status === 'Hired' && selectedApplicant.status !== 'Hired') {
         // Check if user already exists in profiles
@@ -128,7 +132,7 @@ export const AdminApplicantsPage = () => {
           // We still want to update the applicant status, so we don't return here anymore
         } else {
           // Generate temporary credentials
-          const tempPassword = generateTempPassword(selectedApplicant);
+          const tempPassword = generateTempPassword();
           
           // Create auth user
           const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -155,17 +159,26 @@ export const AdminApplicantsPage = () => {
               email: selectedApplicant.email,
               password: tempPassword
             });
+            
+            tempPasswordToSave = `TEMP_PASSWORD:${tempPassword}`;
 
             addNotification('success', 'New Account Created', `A new account was automatically generated for ${selectedApplicant.first_name} ${selectedApplicant.last_name} (${selectedApplicant.email}).`);
           }
         }
       }
 
+      let newRejectionReason = null;
+      if (editFormData.status === 'Failed') {
+        newRejectionReason = editFormData.rejection_reason?.startsWith('TEMP_PASSWORD:') ? null : editFormData.rejection_reason;
+      } else if (editFormData.status === 'Hired') {
+        newRejectionReason = tempPasswordToSave || selectedApplicant.rejection_reason;
+      }
+
       const { data, error } = await supabase
         .from('applicants')
         .update({
           status: editFormData.status,
-          rejection_reason: editFormData.status === 'Failed' ? editFormData.rejection_reason : null
+          rejection_reason: newRejectionReason
         })
         .eq('id', selectedApplicant.id)
         .select();
@@ -177,10 +190,13 @@ export const AdminApplicantsPage = () => {
       }
 
       // Update local state
-      setApplicants(prev => prev.map(a => a.id === selectedApplicant.id ? { ...a, ...editFormData } : a));
+      setApplicants(prev => prev.map(a => a.id === selectedApplicant.id ? { ...a, ...editFormData, rejection_reason: newRejectionReason } : a));
       
       if (editFormData.status !== 'Hired') {
         handleModalClose();
+      } else {
+        // Update selectedApplicant so the UI reflects the new rejection_reason
+        setSelectedApplicant((prev: any) => ({ ...prev, ...editFormData, rejection_reason: newRejectionReason }));
       }
     } catch (err: any) {
       console.error('Error updating applicant:', err);
@@ -314,13 +330,16 @@ export const AdminApplicantsPage = () => {
           
           <nav className="hidden md:flex items-center gap-2 ml-8">
             <a href="#admin-dashboard" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
-              Interns
+              Users
             </a>
             <a href="#admin-applicants" className="px-4 py-2 bg-white/10 text-white rounded-lg font-medium text-sm transition-colors">
               Applicants
             </a>
             <a href="#admin-notifications" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
               Notifications
+            </a>
+            <a href="#admin-feedback" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
+              Feedback
             </a>
           </nav>
         </div>
@@ -662,7 +681,7 @@ export const AdminApplicantsPage = () => {
                       </div>
                       <textarea
                         name="rejection_reason"
-                        value={editFormData.rejection_reason || ''}
+                        value={editFormData.rejection_reason?.startsWith('TEMP_PASSWORD:') ? '' : (editFormData.rejection_reason || '')}
                         onChange={handleInputChange}
                         placeholder="Write a custom reason or select a template above..."
                         className="w-full bg-white border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all min-h-[100px] resize-y"
@@ -682,10 +701,16 @@ export const AdminApplicantsPage = () => {
                       </p>
                       <div className="mb-4 bg-white p-3 rounded border border-green-200 font-mono text-sm text-green-800">
                         <div><strong>Email:</strong> {selectedApplicant.email}</div>
-                        <div><strong>Password:</strong> {generateTempPassword(selectedApplicant)}</div>
+                        <div><strong>Password:</strong> {
+                          generatedCredentials 
+                            ? generatedCredentials.password 
+                            : (selectedApplicant.rejection_reason?.startsWith('TEMP_PASSWORD:') 
+                                ? selectedApplicant.rejection_reason.replace('TEMP_PASSWORD:', '') 
+                                : <span className="text-gray-400 italic">Hidden (Created previously)</span>)
+                        }</div>
                       </div>
                       <a
-                        href={`mailto:${selectedApplicant.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${selectedApplicant.email}\nPassword: ${generateTempPassword(selectedApplicant)}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
+                        href={`mailto:${selectedApplicant.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${selectedApplicant.email}\nPassword: ${generatedCredentials ? generatedCredentials.password : (selectedApplicant.rejection_reason?.startsWith('TEMP_PASSWORD:') ? selectedApplicant.rejection_reason.replace('TEMP_PASSWORD:', '') : '[Your previously created password]')}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
                         className="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                         target="_blank"
                         rel="noopener noreferrer"

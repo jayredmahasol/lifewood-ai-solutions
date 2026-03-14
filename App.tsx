@@ -28,6 +28,7 @@ import { DashboardPage } from './components/DashboardPage';
 import { AdminDashboardPage } from './components/AdminDashboardPage';
 import { AdminApplicantsPage } from './components/AdminApplicantsPage';
 import { AdminNotificationsPage } from './components/AdminNotificationsPage';
+import { AdminFeedbackPage } from './components/AdminFeedbackPage';
 
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -64,11 +65,12 @@ function App() {
   const isAdminDashboardPage = currentRoute === '#admin-dashboard';
   const isAdminApplicantsPage = currentRoute === '#admin-applicants';
   const isAdminNotificationsPage = currentRoute === '#admin-notifications';
+  const isAdminFeedbackPage = currentRoute === '#admin-feedback';
   const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings';
 
   return (
     <div className="min-h-screen bg-lifewood-beige text-lifewood-darkGreen selection:bg-lifewood-primaryGreen selection:text-white font-sans">
-      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && <Navbar currentRoute={currentRoute} />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && !isAdminFeedbackPage && <Navbar currentRoute={currentRoute} />}
       
       <main>
         <AnimatePresence mode="wait">
@@ -89,6 +91,8 @@ function App() {
               <AdminApplicantsPage />
             ) : isAdminNotificationsPage ? (
               <AdminNotificationsPage />
+            ) : isAdminFeedbackPage ? (
+              <AdminFeedbackPage />
             ) : isDashboardPage ? (
               <DashboardPage />
             ) : isAIServicesPage ? (
@@ -146,7 +150,7 @@ function App() {
         </AnimatePresence>
       </main>
       
-      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && <Footer />}
+      {!isValidationPage && !isLoginPage && !isDashboardPage && !isAdminDashboardPage && !isAdminApplicantsPage && !isAdminNotificationsPage && !isAdminFeedbackPage && <Footer />}
     </div>
   );
 }

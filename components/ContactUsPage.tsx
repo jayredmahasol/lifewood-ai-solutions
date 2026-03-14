@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // Contact Us Page Component
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone, Send, ArrowRight } from 'lucide-react';
+import { Mail, MapPin, Phone, Send, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 declare global {
   interface Window {
@@ -12,6 +13,57 @@ declare global {
 export const ContactUsPage: React.FC = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    try {
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            message: formData.message
+          }
+        ]);
+
+      if (error) {
+        // If the table doesn't exist, we'll catch it here
+        if (error.code === '42P01') {
+           throw new Error('The "feedback" table does not exist in the database. Please create it in Supabase.');
+        }
+        throw error;
+      }
+
+      setSubmitSuccess(true);
+      setFormData({ firstName: '', lastName: '', email: '', message: '' });
+    } catch (err: any) {
+      console.error('Error submitting feedback:', err);
+      setSubmitError(err.message || 'An error occurred while sending your message.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -95,13 +147,30 @@ export const ContactUsPage: React.FC = () => {
             transition={{ delay: 0.3 }}
             className="bg-lifewood-darkGreen/5 backdrop-blur-xl rounded-[2rem] p-8 md:p-10 border border-lifewood-darkGreen/10"
           >
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {submitSuccess && (
+                <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-start gap-3">
+                  <CheckCircle2 size={20} className="shrink-0 mt-0.5" />
+                  <p className="text-sm">Thank you for reaching out! Your message has been sent successfully.</p>
+                </div>
+              )}
+
+              {submitError && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-start gap-3">
+                  <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                  <p className="text-sm">{submitError}</p>
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="firstName" className="text-sm font-medium text-lifewood-darkGreen">First name</label>
                   <input 
                     type="text" 
                     id="firstName"
+                    required
+                    value={formData.firstName}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-xl bg-lifewood-white border-transparent focus:border-lifewood-orange focus:ring-0 transition-colors"
                     placeholder="Jane"
                   />
@@ -111,6 +180,9 @@ export const ContactUsPage: React.FC = () => {
                   <input 
                     type="text" 
                     id="lastName"
+                    required
+                    value={formData.lastName}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-xl bg-lifewood-white border-transparent focus:border-lifewood-orange focus:ring-0 transition-colors"
                     placeholder="Doe"
                   />
@@ -122,6 +194,9 @@ export const ContactUsPage: React.FC = () => {
                 <input 
                   type="email" 
                   id="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl bg-lifewood-white border-transparent focus:border-lifewood-orange focus:ring-0 transition-colors"
                   placeholder="jane@company.com"
                 />
@@ -131,7 +206,10 @@ export const ContactUsPage: React.FC = () => {
                 <label htmlFor="message" className="text-sm font-medium text-lifewood-darkGreen">Message</label>
                 <textarea 
                   id="message"
+                  required
                   rows={4}
+                  value={formData.message}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl bg-lifewood-white border-transparent focus:border-lifewood-orange focus:ring-0 transition-colors resize-none"
                   placeholder="Tell us about your project..."
                 ></textarea>
@@ -139,10 +217,20 @@ export const ContactUsPage: React.FC = () => {
 
               <button 
                 type="submit"
-                className="w-full py-4 bg-lifewood-darkGreen text-white rounded-xl font-semibold hover:bg-lifewood-primaryGreen transition-colors flex items-center justify-center gap-2 group"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-lifewood-darkGreen text-white rounded-xl font-semibold hover:bg-lifewood-primaryGreen transition-colors flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Send Message
-                <Send size={18} className="group-hover:translate-x-1 transition-transform" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    Send Message
+                    <Send size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
               </button>
             </form>
           </motion.div>
@@ -204,4 +292,5 @@ export const ContactUsPage: React.FC = () => {
     </div>
   );
 };
+
 

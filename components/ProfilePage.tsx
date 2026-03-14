@@ -67,6 +67,24 @@ export const ProfilePage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const isStep1Valid = !!(formData.lastName && formData.firstName && formData.gender && formData.dob && formData.age && formData.status);
+  const isStep2Valid = !!(formData.school && formData.designation && formData.internshipCoordinator && formData.requiredHours && formData.educationalBackground);
+  const isStep3Valid = !!(formData.email && formData.contactNumber && formData.permanentAddress && formData.presentAddress && formData.distance && formData.timeTravel);
+  const isStep4Valid = !!(formData.emergencyName && formData.emergencyRelationship && formData.emergencyContact && formData.emergencyAddress);
+  const isStep5Valid = true; // Account settings are optional
+
+  const isCurrentStepValid = () => {
+    switch (currentStep) {
+      case 1: return isStep1Valid;
+      case 2: return isStep2Valid;
+      case 3: return isStep3Valid;
+      case 4: return isStep4Valid;
+      case 5: return isStep5Valid;
+      default: return true;
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -457,24 +475,20 @@ create policy "Anyone can update their own avatar."
         </div>
       )}
 
-      {/* Main Card Container */}
-      <div className="flex-1 max-w-[1600px] mx-auto w-full bg-white/80 backdrop-blur-2xl border border-white/50 rounded-r-[3rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-        
-        {/* Sidebar / Profile Info */}
-        <aside className="w-full lg:w-[400px] bg-[#133020] text-white p-10 flex flex-col items-center relative overflow-hidden">
-          {/* Decorative Background */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#046241] rounded-full blur-[80px] opacity-50 -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFB347] rounded-full blur-[80px] opacity-20 translate-y-1/2 -translate-x-1/2"></div>
+      {/* Main Container */}
+      <div className="flex-1 w-full bg-[#F9F7F7] overflow-y-auto custom-scrollbar">
+        <div className="max-w-5xl mx-auto px-4 md:px-8 py-12">
           
-          <div className="relative z-10 flex flex-col items-center w-full h-full">
+          {/* Profile Header */}
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-12 bg-white p-8 rounded-3xl shadow-sm border border-[#133020]/5">
             {/* Profile Image */}
-            <div className="relative group cursor-pointer mb-6">
-              <div className="w-48 h-48 rounded-full border-4 border-[#FFB347] overflow-hidden bg-white shadow-2xl">
+            <div className="relative group cursor-pointer shrink-0">
+              <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-[#f5eedb] shadow-md">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#f5eedb] text-[#133020]">
-                    <User size={64} opacity={0.5} />
+                  <div className="w-full h-full flex items-center justify-center text-[#133020]">
+                    <User size={48} opacity={0.5} />
                   </div>
                 )}
               </div>
@@ -485,9 +499,9 @@ create policy "Anyone can update their own avatar."
                 onClick={() => fileInputRef.current?.click()}
               >
                 {uploading ? (
-                  <Loader2 size={32} className="text-white animate-spin" />
+                  <Loader2 size={24} className="text-white animate-spin" />
                 ) : (
-                  <Camera size={32} className="text-white" />
+                  <Camera size={24} className="text-white" />
                 )}
               </div>
               <input 
@@ -499,265 +513,238 @@ create policy "Anyone can update their own avatar."
               />
             </div>
 
-            <h2 className="text-3xl font-bold text-center mb-2">{formData.firstName} {formData.lastName || 'User'}</h2>
-            <div className="px-4 py-1.5 bg-white/10 rounded-full text-sm font-medium backdrop-blur-sm border border-white/10 mb-8">
-              {formData.designation || 'Intern / Student'}
-            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-3xl font-bold text-[#133020] mb-2">{formData.firstName} {formData.lastName || 'User'}</h2>
+              <p className="text-[#133020]/60 font-medium mb-6">{formData.designation || 'Intern / Student'}</p>
 
-            {/* Quick Stats / Info */}
-            <div className="w-full space-y-6 mt-auto">
-              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-                <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
-                  <Briefcase size={18} />
-                  <span className="text-xs font-bold uppercase tracking-wider">School</span>
+              {/* Quick Stats */}
+              <div className="flex flex-wrap justify-center md:justify-start gap-6">
+                <div className="flex items-center gap-2 text-[#133020]/80">
+                  <Briefcase size={18} className="text-[#046241]" />
+                  <span className="font-medium text-sm">{formData.school || 'School not set'}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  {formData.school && schools.find(s => s.name === formData.school)?.logo && (
-                    <img 
-                      src={schools.find(s => s.name === formData.school)?.logo} 
-                      alt="School Logo" 
-                      className="w-8 h-8 object-contain bg-white rounded-full p-1"
-                      referrerPolicy="no-referrer"
-                    />
-                  )}
-                  <p className="font-medium text-lg leading-tight">{formData.school || 'Not set'}</p>
+                <div className="flex items-center gap-2 text-[#133020]/80">
+                  <Clock size={18} className="text-[#046241]" />
+                  <span className="font-medium text-sm">{formData.requiredHours ? `${formData.requiredHours} Hours` : 'Hours not set'}</span>
                 </div>
-              </div>
-
-              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-                <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
-                  <Clock size={18} />
-                  <span className="text-xs font-bold uppercase tracking-wider">Required Hours</span>
+                <div className="flex items-center gap-2 text-[#133020]/80">
+                  <MapPin size={18} className="text-[#046241]" />
+                  <span className="font-medium text-sm">{formData.presentAddress || 'Location not set'}</span>
                 </div>
-                <p className="font-medium text-lg">{formData.requiredHours ? `${formData.requiredHours} Hours` : 'Not set'}</p>
-              </div>
-
-              <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
-                <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
-                  <MapPin size={18} />
-                  <span className="text-xs font-bold uppercase tracking-wider">Location</span>
-                </div>
-                <p className="font-medium text-sm opacity-80 leading-relaxed">{formData.presentAddress || 'Not set'}</p>
               </div>
             </div>
           </div>
-        </aside>
 
-        {/* Main Content / Stepper */}
-        <main className="flex-1 bg-[#F9F7F7] relative flex flex-col">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] pointer-events-none"></div>
-          
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
+          {/* Main Content / Stepper */}
+          <div className="bg-white rounded-3xl shadow-sm border border-[#133020]/5 overflow-hidden">
              <Stepper
               initialStep={1}
+              onStepChange={(step) => setCurrentStep(step)}
               onFinalStepCompleted={handleSave}
               backButtonText="Previous"
-              nextButtonText="Next"
+              nextButtonText={currentStep === 4 ? "Save Profile" : "Next"}
+              disableStepIndicators={true}
+              nextButtonProps={{ disabled: !isCurrentStepValid() }}
               stepCircleContainerClassName="shadow-none border-0 bg-transparent max-w-none w-full h-full flex flex-col"
-              stepContainerClassName="px-12 py-8 bg-white border-b border-[#133020]/5 sticky top-0 z-20"
-              contentClassName="px-12 py-8 flex-1"
-              footerClassName="px-12 py-8 bg-white border-t border-[#133020]/5 sticky bottom-0 z-20"
+              stepContainerClassName="px-6 md:px-12 py-6 bg-white border-b border-[#133020]/5"
+              contentClassName="px-6 md:px-12 py-8 flex-1"
+              footerClassName="px-6 md:px-12 py-6 bg-gray-50 border-t border-[#133020]/5"
             >
               {/* Step 1: Personal Information */}
               <Step>
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Personal Information</h3>
-                  <p className="text-[#133020]/60 mb-8">Please provide your basic personal details.</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <InputGroup label="Last Name">
-                      <TextInput name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Doe" />
-                    </InputGroup>
-                    <InputGroup label="First Name">
-                      <TextInput name="firstName" value={formData.firstName} onChange={handleChange} placeholder="John" />
-                    </InputGroup>
-                    <InputGroup label="Middle Name">
-                      <TextInput name="middleName" value={formData.middleName} onChange={handleChange} placeholder="Smith" />
-                    </InputGroup>
+                <div className="max-w-4xl mx-auto flex flex-col h-full">
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#133020] mb-2">Personal Information</h3>
+                    <p className="text-[#133020]/60 mb-8">Please provide your basic personal details.</p>
                     
-                    <InputGroup label="Gender" icon={User}>
-                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </InputGroup>
-                    <InputGroup label="Date of Birth" icon={Calendar}>
-                      <TextInput type="date" name="dob" value={formData.dob} onChange={handleChange} />
-                    </InputGroup>
-                    <InputGroup label="Age">
-                      <TextInput type="number" name="age" value={formData.age} onChange={handleChange} placeholder="21" />
-                    </InputGroup>
-                    
-                    <InputGroup label="Civil Status" icon={Heart}>
-                      <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
-                        <option value="">Select Status</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                        <option value="Widowed">Widowed</option>
-                      </select>
-                    </InputGroup>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <InputGroup label="Last Name">
+                        <TextInput name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Doe" />
+                      </InputGroup>
+                      <InputGroup label="First Name">
+                        <TextInput name="firstName" value={formData.firstName} onChange={handleChange} placeholder="John" />
+                      </InputGroup>
+                      <InputGroup label="Middle Name">
+                        <TextInput name="middleName" value={formData.middleName} onChange={handleChange} placeholder="Smith" />
+                      </InputGroup>
+                      
+                      <InputGroup label="Gender" icon={User}>
+                        <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
+                          <option value="">Select Gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </InputGroup>
+                      <InputGroup label="Date of Birth" icon={Calendar}>
+                        <TextInput type="date" name="dob" value={formData.dob} onChange={handleChange} />
+                      </InputGroup>
+                      <InputGroup label="Age">
+                        <TextInput type="number" name="age" value={formData.age} onChange={handleChange} placeholder="21" />
+                      </InputGroup>
+                      
+                      <InputGroup label="Civil Status" icon={Heart}>
+                        <select name="status" value={formData.status} onChange={handleChange} className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 px-4 outline-none text-[#133020]">
+                          <option value="">Select Status</option>
+                          <option value="Single">Single</option>
+                          <option value="Married">Married</option>
+                          <option value="Widowed">Widowed</option>
+                        </select>
+                      </InputGroup>
+                    </div>
                   </div>
+                  {!isStep1Valid && (
+                    <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800">
+                      <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                      <p className="text-sm">Please fill in all required fields to proceed to the next step.</p>
+                    </div>
+                  )}
                 </div>
               </Step>
 
               {/* Step 2: Academic Information */}
               <Step>
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Academic Information</h3>
-                  <p className="text-[#133020]/60 mb-8">Details about your current education and internship.</p>
+                <div className="max-w-4xl mx-auto flex flex-col h-full">
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#133020] mb-2">Academic Information</h3>
+                    <p className="text-[#133020]/60 mb-8">Details about your current education and internship.</p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup label="School" icon={GraduationCap} className="md:col-span-2">
-                      <div className="relative">
-                        <select 
-                          name="school" 
-                          value={formData.school} 
-                          onChange={handleChange} 
-                          className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
-                        >
-                          <option value="">Select School</option>
-                          {schools.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
-                        </select>
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
-                          {formData.school ? (
-                            <img src={schools.find(s => s.name === formData.school)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                          ) : (
-                            <GraduationCap size={20} className="text-[#133020]/30" />
-                          )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputGroup label="School" icon={GraduationCap} className="md:col-span-2">
+                        <div className="relative">
+                          <select 
+                            name="school" 
+                            value={formData.school} 
+                            onChange={handleChange} 
+                            className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
+                          >
+                            <option value="">Select School</option>
+                            {schools.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                          </select>
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
+                            {formData.school ? (
+                              <img src={schools.find(s => s.name === formData.school)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                            ) : (
+                              <GraduationCap size={20} className="text-[#133020]/30" />
+                            )}
+                          </div>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#133020]/30 pointer-events-none" size={16} />
                         </div>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#133020]/30 pointer-events-none" size={16} />
-                      </div>
-                    </InputGroup>
+                      </InputGroup>
 
-                    <InputGroup label="Designation" icon={Briefcase}>
-                      <TextInput name="designation" value={formData.designation} onChange={handleChange} placeholder="e.g. Web Developer Intern" />
-                    </InputGroup>
-                    <InputGroup label="Internship Coordinator" icon={User}>
-                      <TextInput name="internshipCoordinator" value={formData.internshipCoordinator} onChange={handleChange} placeholder="Coordinator Name" />
-                    </InputGroup>
-                    <InputGroup label="Required OJT Hours" icon={Clock}>
-                      <TextInput type="number" name="requiredHours" value={formData.requiredHours} onChange={handleChange} placeholder="e.g. 600" />
-                    </InputGroup>
-                    <InputGroup label="Educational Background" icon={GraduationCap}>
-                      <div className="relative">
-                        <select 
-                          name="educationalBackground" 
-                          value={formData.educationalBackground} 
-                          onChange={handleChange} 
-                          className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
-                        >
-                          <option value="">Select Program</option>
-                          {programs.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                        </select>
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
-                          {formData.educationalBackground ? (
-                            <img src={programs.find(p => p.name === formData.educationalBackground)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                          ) : (
-                            <GraduationCap size={20} className="text-[#133020]/30" />
-                          )}
+                      <InputGroup label="Designation" icon={Briefcase}>
+                        <TextInput name="designation" value={formData.designation} onChange={handleChange} placeholder="e.g. Web Developer Intern" />
+                      </InputGroup>
+                      <InputGroup label="Internship Coordinator" icon={User}>
+                        <TextInput name="internshipCoordinator" value={formData.internshipCoordinator} onChange={handleChange} placeholder="Coordinator Name" />
+                      </InputGroup>
+                      <InputGroup label="Required OJT Hours" icon={Clock}>
+                        <TextInput type="number" name="requiredHours" value={formData.requiredHours} onChange={handleChange} placeholder="e.g. 600" />
+                      </InputGroup>
+                      <InputGroup label="Educational Background" icon={GraduationCap}>
+                        <div className="relative">
+                          <select 
+                            name="educationalBackground" 
+                            value={formData.educationalBackground} 
+                            onChange={handleChange} 
+                            className="w-full bg-[#f5eedb]/50 border border-[#133020]/10 rounded-xl py-3 pl-12 pr-4 outline-none text-[#133020] appearance-none"
+                          >
+                            <option value="">Select Program</option>
+                            {programs.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                          </select>
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 pointer-events-none">
+                            {formData.educationalBackground ? (
+                              <img src={programs.find(p => p.name === formData.educationalBackground)?.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                            ) : (
+                              <GraduationCap size={20} className="text-[#133020]/30" />
+                            )}
+                          </div>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#133020]/30 pointer-events-none" size={16} />
                         </div>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-[#133020]/30 pointer-events-none" size={16} />
-                      </div>
-                    </InputGroup>
+                      </InputGroup>
+                    </div>
                   </div>
+                  {!isStep2Valid && (
+                    <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800">
+                      <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                      <p className="text-sm">Please fill in all required fields to proceed to the next step.</p>
+                    </div>
+                  )}
                 </div>
               </Step>
 
               {/* Step 3: Contact & Address */}
               <Step>
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Contact & Address</h3>
-                  <p className="text-[#133020]/60 mb-8">How can we reach you?</p>
+                <div className="max-w-4xl mx-auto flex flex-col h-full">
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#133020] mb-2">Contact & Address</h3>
+                    <p className="text-[#133020]/60 mb-8">How can we reach you?</p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup label="Email Address" icon={Mail}>
-                      <TextInput type="email" name="email" value={formData.email} onChange={handleChange} />
-                    </InputGroup>
-                    <InputGroup label="Contact Number" icon={Phone}>
-                      <TextInput name="contactNumber" value={formData.contactNumber} onChange={handleChange} placeholder="+63 900 000 0000" />
-                    </InputGroup>
-                    
-                    <InputGroup label="Permanent Address" icon={MapPin} className="md:col-span-2">
-                      <TextInput name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} placeholder="Full Address" />
-                    </InputGroup>
-                    <InputGroup label="Present Address" icon={MapPin} className="md:col-span-2">
-                      <TextInput name="presentAddress" value={formData.presentAddress} onChange={handleChange} placeholder="Full Address (if different)" />
-                    </InputGroup>
-                    
-                    <InputGroup label="Distance (km)" icon={MapPin}>
-                      <TextInput type="number" name="distance" value={formData.distance} onChange={handleChange} placeholder="e.g. 5.2" />
-                    </InputGroup>
-                    <InputGroup label="Travel Time (min)" icon={Clock}>
-                      <TextInput type="number" name="timeTravel" value={formData.timeTravel} onChange={handleChange} placeholder="e.g. 30" />
-                    </InputGroup>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputGroup label="Email Address" icon={Mail}>
+                        <TextInput type="email" name="email" value={formData.email} onChange={handleChange} />
+                      </InputGroup>
+                      <InputGroup label="Contact Number" icon={Phone}>
+                        <TextInput name="contactNumber" value={formData.contactNumber} onChange={handleChange} placeholder="+63 900 000 0000" />
+                      </InputGroup>
+                      
+                      <InputGroup label="Permanent Address" icon={MapPin} className="md:col-span-2">
+                        <TextInput name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} placeholder="Full Address" />
+                      </InputGroup>
+                      <InputGroup label="Present Address" icon={MapPin} className="md:col-span-2">
+                        <TextInput name="presentAddress" value={formData.presentAddress} onChange={handleChange} placeholder="Full Address (if different)" />
+                      </InputGroup>
+                      
+                      <InputGroup label="Distance (km)" icon={MapPin}>
+                        <TextInput type="number" name="distance" value={formData.distance} onChange={handleChange} placeholder="e.g. 5.2" />
+                      </InputGroup>
+                      <InputGroup label="Travel Time (min)" icon={Clock}>
+                        <TextInput type="number" name="timeTravel" value={formData.timeTravel} onChange={handleChange} placeholder="e.g. 30" />
+                      </InputGroup>
+                    </div>
                   </div>
+                  {!isStep3Valid && (
+                    <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800">
+                      <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                      <p className="text-sm">Please fill in all required fields to proceed to the next step.</p>
+                    </div>
+                  )}
                 </div>
               </Step>
 
               {/* Step 4: Emergency Contact */}
               <Step>
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Emergency Contact</h3>
-                  <p className="text-[#133020]/60 mb-8">Who should we contact in case of emergency?</p>
+                <div className="max-w-4xl mx-auto flex flex-col h-full">
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#133020] mb-2">Emergency Contact</h3>
+                    <p className="text-[#133020]/60 mb-8">Who should we contact in case of emergency?</p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup label="Contact Person">
-                      <TextInput name="emergencyName" value={formData.emergencyName} onChange={handleChange} placeholder="Full Name" />
-                    </InputGroup>
-                    <InputGroup label="Relationship">
-                      <TextInput name="emergencyRelationship" value={formData.emergencyRelationship} onChange={handleChange} placeholder="e.g. Parent" />
-                    </InputGroup>
-                    <InputGroup label="Contact Number" icon={Phone}>
-                      <TextInput name="emergencyContact" value={formData.emergencyContact} onChange={handleChange} placeholder="+63 900 000 0000" />
-                    </InputGroup>
-                    <InputGroup label="Address" icon={MapPin}>
-                      <TextInput name="emergencyAddress" value={formData.emergencyAddress} onChange={handleChange} placeholder="Full Address" />
-                    </InputGroup>
-                  </div>
-                </div>
-              </Step>
-
-              {/* Step 5: Account Settings */}
-              <Step>
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-bold text-[#133020] mb-2">Account Settings</h3>
-                  <p className="text-[#133020]/60 mb-8">Update your password and account security.</p>
-
-                  <div className="bg-white p-6 rounded-2xl border border-[#133020]/10 max-w-md">
-                    <h4 className="text-lg font-bold text-[#133020] mb-4">Change Password</h4>
-                    <form onSubmit={handlePasswordChange} className="space-y-4">
-                      <InputGroup label="New Password">
-                        <TextInput 
-                          type="password" 
-                          value={newPassword} 
-                          onChange={(e: any) => setNewPassword(e.target.value)} 
-                          placeholder="Enter new password" 
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputGroup label="Contact Person">
+                        <TextInput name="emergencyName" value={formData.emergencyName} onChange={handleChange} placeholder="Full Name" />
                       </InputGroup>
-                      
-                      {passwordMessage.text && (
-                        <div className={`p-3 rounded-xl text-sm ${passwordMessage.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                          {passwordMessage.text}
-                        </div>
-                      )}
-
-                      <button 
-                        type="submit"
-                        disabled={passwordUpdating || !newPassword}
-                        className="w-full py-3 bg-[#046241] text-white rounded-xl font-medium hover:bg-[#133020] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        {passwordUpdating ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                        Update Password
-                      </button>
-                    </form>
+                      <InputGroup label="Relationship">
+                        <TextInput name="emergencyRelationship" value={formData.emergencyRelationship} onChange={handleChange} placeholder="e.g. Parent" />
+                      </InputGroup>
+                      <InputGroup label="Contact Number" icon={Phone}>
+                        <TextInput name="emergencyContact" value={formData.emergencyContact} onChange={handleChange} placeholder="+63 900 000 0000" />
+                      </InputGroup>
+                      <InputGroup label="Address" icon={MapPin}>
+                        <TextInput name="emergencyAddress" value={formData.emergencyAddress} onChange={handleChange} placeholder="Full Address" />
+                      </InputGroup>
+                    </div>
                   </div>
+                  {!isStep4Valid && (
+                    <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800">
+                      <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                      <p className="text-sm">Please fill in all required fields to save your profile.</p>
+                    </div>
+                  )}
                 </div>
               </Step>
             </Stepper>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

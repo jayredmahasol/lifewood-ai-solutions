@@ -104,6 +104,39 @@ export const AdminDashboardPage = () => {
     }
   };
 
+  const handleSuspendUser = async () => {
+    if (!selectedUser) return;
+    
+    const isCurrentlySuspended = selectedUser.website === 'suspended';
+    const newWebsiteValue = isCurrentlySuspended ? null : 'suspended';
+    
+    if (!confirm(`Are you sure you want to ${isCurrentlySuspended ? 'unsuspend' : 'suspend'} this user?`)) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          website: newWebsiteValue,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedUser.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, website: newWebsiteValue } : u));
+      setSelectedUser((prev: any) => ({ ...prev, website: newWebsiteValue }));
+    } catch (err) {
+      console.error('Error suspending user:', err);
+      alert(`Failed to ${isCurrentlySuspended ? 'unsuspend' : 'suspend'} user.`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Filter users based on search
   const filteredUsers = users.filter(user => 
     (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -164,19 +197,22 @@ export const AdminDashboardPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold leading-tight">Admin Dashboard</h1>
-              <p className="text-white/60 text-xs">Manage Lifewood Interns</p>
+              <p className="text-white/60 text-xs">Manage Lifewood Users</p>
             </div>
           </div>
           
           <nav className="hidden md:flex items-center gap-2 ml-8">
             <a href="#admin-dashboard" className="px-4 py-2 bg-white/10 text-white rounded-lg font-medium text-sm transition-colors">
-              Interns
+              Users
             </a>
             <a href="#admin-applicants" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
               Applicants
             </a>
             <a href="#admin-notifications" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
               Notifications
+            </a>
+            <a href="#admin-feedback" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
+              Feedback
             </a>
           </nav>
         </div>
@@ -213,7 +249,7 @@ export const AdminDashboardPage = () => {
               <Users size={32} />
             </div>
             <div>
-              <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Total Interns</p>
+              <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Total Users</p>
               <h3 className="text-4xl font-bold text-[#133020]">{users.length}</h3>
             </div>
           </motion.div>
@@ -406,9 +442,14 @@ export const AdminDashboardPage = () => {
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-[#133020] text-sm">
-                              {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || 'Unknown User'}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-[#133020] text-sm">
+                                {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || 'Unknown User'}
+                              </p>
+                              {user.website === 'suspended' && (
+                                <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Suspended</span>
+                              )}
+                            </div>
                             <p className="text-xs text-[#133020]/50">{user.email}</p>
                           </div>
                         </div>
@@ -523,7 +564,12 @@ export const AdminDashboardPage = () => {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Edit User Profile</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold">Edit User Profile</h2>
+                      {selectedUser.website === 'suspended' && (
+                        <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Suspended</span>
+                      )}
+                    </div>
                     <p className="text-white/60 text-sm">ID: {selectedUser.id}</p>
                   </div>
                 </div>
@@ -643,21 +689,31 @@ export const AdminDashboardPage = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 border-t border-[#133020]/10 bg-[#f5eedb]/30 flex justify-end gap-3 shrink-0">
+              <div className="p-6 border-t border-[#133020]/10 bg-[#f5eedb]/30 flex justify-between gap-3 shrink-0">
                 <button 
-                  onClick={handleModalClose}
-                  className="px-6 py-2.5 rounded-xl text-[#133020] font-bold hover:bg-[#133020]/5 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleSaveUser}
+                  onClick={handleSuspendUser}
                   disabled={saving}
-                  className="px-6 py-2.5 rounded-xl bg-[#046241] text-white font-bold hover:bg-[#035436] transition-colors flex items-center gap-2 disabled:opacity-70"
+                  className={`px-6 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 disabled:opacity-70 ${selectedUser.website === 'suspended' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
                 >
-                  {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  Save Changes
+                  {saving ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
+                  {selectedUser.website === 'suspended' ? 'Unsuspend User' : 'Suspend User'}
                 </button>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleModalClose}
+                    className="px-6 py-2.5 rounded-xl text-[#133020] font-bold hover:bg-[#133020]/5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSaveUser}
+                    disabled={saving}
+                    className="px-6 py-2.5 rounded-xl bg-[#046241] text-white font-bold hover:bg-[#035436] transition-colors flex items-center gap-2 disabled:opacity-70"
+                  >
+                    {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

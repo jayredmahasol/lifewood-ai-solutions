@@ -160,6 +160,12 @@ export const DashboardPage: React.FC = () => {
           .single();
 
         if (profile) {
+          if (profile.website === 'suspended') {
+            await supabase.auth.signOut();
+            window.location.hash = '#login';
+            alert('Your account has been suspended. Please contact the administrator.');
+            return;
+          }
           setFullName(profile.first_name && profile.last_name ? `${profile.first_name} ${profile.last_name}` : profile.full_name || user.user_metadata?.full_name || 'User');
           setEmail(profile.email || user.email || '');
           if (profile.avatar_url) {
