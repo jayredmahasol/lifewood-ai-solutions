@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+import emailjs from '@emailjs/browser';
 import { 
   Users, Search, Filter, MoreVertical, ShieldCheck, 
   User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2, FileText, Download, Trash2
@@ -192,6 +193,43 @@ export const AdminApplicantsPage = () => {
       // Update local state
       setApplicants(prev => prev.map(a => a.id === selectedApplicant.id ? { ...a, ...editFormData, rejection_reason: newRejectionReason } : a));
       
+      // Construct email message
+      const tempPass = tempPasswordToSave ? tempPasswordToSave.replace('TEMP_PASSWORD:', '') : (selectedApplicant.rejection_reason?.startsWith('TEMP_PASSWORD:') ? selectedApplicant.rejection_reason.replace('TEMP_PASSWORD:', '') : undefined);
+      
+      let emailMessage = '';
+      if (editFormData.status === 'Hired') {
+        emailMessage = `Congratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${selectedApplicant.email}\nPassword: ${tempPass || '[Your previously created password]'}\n\nPlease change your password immediately after logging in.`;
+      } else if (editFormData.status === 'Failed') {
+        emailMessage = `Thank you for taking the time to apply for the ${selectedApplicant.position_applied} position at Lifewood.\n\n`;
+        if (newRejectionReason) {
+          emailMessage += `${newRejectionReason}`;
+        } else {
+          emailMessage += `Unfortunately, we have decided not to move forward with your application at this time.`;
+        }
+      } else {
+        emailMessage = `We are writing to inform you that the status of your application for ${selectedApplicant.position_applied} has been updated to: ${editFormData.status}.\n\nWe will keep you posted on any further updates.`;
+      }
+
+      // Send Email via EmailJS
+      try {
+        await emailjs.send(
+          'service_wfzsrry',
+          'template_ynn60zq',
+          {
+            to_email: selectedApplicant.email,
+            to_name: selectedApplicant.first_name,
+            position_applied: selectedApplicant.position_applied,
+            status: editFormData.status,
+            message: emailMessage,
+          },
+          'a5clkwXSA8Hdruwoh' // Replace with your actual EmailJS public key
+        );
+        addNotification('success', 'Email Sent', `Notification email sent to ${selectedApplicant.email}.`);
+      } catch (emailErr) {
+        console.error('Failed to send email via EmailJS:', emailErr);
+        addNotification('error', 'Email Failed', `Failed to send email notification to ${selectedApplicant.email}.`);
+      }
+
       if (editFormData.status !== 'Hired') {
         handleModalClose();
       } else {
@@ -468,8 +506,6 @@ export const AdminApplicantsPage = () => {
                             <option value="">All Statuses</option>
                             <option value="Pending Review">Pending Review</option>
                             <option value="AI Pre-Screening">AI Pre-Screening</option>
-                            <option value="Post-Screening">Post-Screening</option>
-                            <option value="Interview">Interview</option>
                             <option value="Hired">Hired</option>
                             <option value="Failed">Failed</option>
                           </select>
@@ -546,7 +582,6 @@ export const AdminApplicantsPage = () => {
                             ${applicant.status === 'Hired' ? 'bg-green-50 text-green-700 border-green-200' : 
                               applicant.status === 'Failed' ? 'bg-red-50 text-red-700 border-red-200' : 
                               applicant.status === 'AI Pre-Screening' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              applicant.status === 'Post-Screening' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                               'bg-yellow-50 text-yellow-700 border-yellow-200'}`}
                           >
                             {applicant.status || 'Pending Review'}
@@ -659,8 +694,6 @@ export const AdminApplicantsPage = () => {
                   >
                     <option value="Pending Review">Pending Review</option>
                     <option value="AI Pre-Screening">AI Pre-Screening</option>
-                    <option value="Post-Screening">Post-Screening</option>
-                    <option value="Interview">Interview</option>
                     <option value="Hired">Hired</option>
                     <option value="Failed">Failed</option>
                   </select>
@@ -709,15 +742,6 @@ export const AdminApplicantsPage = () => {
                                 : <span className="text-gray-400 italic">Hidden (Created previously)</span>)
                         }</div>
                       </div>
-                      <a
-                        href={`mailto:${selectedApplicant.email}?subject=${encodeURIComponent('Your Lifewood Application - Account Credentials')}&body=${encodeURIComponent(`Hi ${selectedApplicant.first_name},\n\nCongratulations! Your application for ${selectedApplicant.position_applied} has been successful and you are hired.\n\nAn account has been created for you on our platform.\n\nIMPORTANT VERIFICATION STEP:\nPlease check your inbox for a verification email from our system and click the link to confirm that this email account belongs to you.\n\nOnce verified, you can log in using the following temporary credentials:\n\nEmail: ${selectedApplicant.email}\nPassword: ${generatedCredentials ? generatedCredentials.password : (selectedApplicant.rejection_reason?.startsWith('TEMP_PASSWORD:') ? selectedApplicant.rejection_reason.replace('TEMP_PASSWORD:', '') : '[Your previously created password]')}\n\nPlease change your password immediately after logging in.\n\nBest regards,\nLifewood Team`)}`}
-                        className="w-full py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                        Email Credentials to Applicant
-                      </a>
                     </div>
                   )}
                   
