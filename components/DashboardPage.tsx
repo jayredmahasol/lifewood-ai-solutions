@@ -1,34 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  LayoutDashboard, 
-  PieChart, 
-  FileText, 
-  BarChart2, 
-  Settings, 
-  LogOut, 
-  ChevronRight, 
-  Zap, 
   User, 
-  Award, 
-  Target, 
-  Activity, 
-  Calendar as CalendarIcon,
-  MoreHorizontal,
-  ArrowUpRight,
-  Loader2,
-  Check,
-  ShieldCheck,
-  Users,
   Mail,
   Lock,
-  Moon,
-  Sun
+  Loader2,
+  Check,
+  ArrowUpRight,
+  Target,
+  Zap,
+  Award,
+  MoreHorizontal,
+  Bell,
+  Search,
+  Phone,
+  GraduationCap,
+  Briefcase,
+  MapPin,
+  Settings
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
-import Squares from './react-bits/Squares';
-import ProfileCard from './react-bits/ProfileCard';
-import ModernBento from './react-bits/ModernBento';
 import Sidebar from './Sidebar';
 import ProfilePage from './ProfilePage';
 
@@ -43,31 +34,6 @@ const colors = {
   earthYellow: '#FFC370',
 };
 
-const SidebarItem = ({ icon: Icon, label, active, onClick, expanded }: any) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center ${expanded ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl transition-all duration-300 relative overflow-hidden group ${
-      active 
-        ? 'text-[#FFB347]' 
-        : 'text-white/40 hover:text-white'
-    }`}
-  >
-    {active && (
-      <motion.div
-        layoutId="activeTab"
-        className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFB347] rounded-r-full"
-      />
-    )}
-    <Icon size={20} className="flex-shrink-0" />
-    <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 origin-left ${expanded ? 'opacity-100 w-auto ml-0' : 'opacity-0 w-0 overflow-hidden'}`}>
-      {label}
-    </span>
-    {active && (
-      <div className="absolute inset-0 bg-[#FFB347]/5 pointer-events-none" />
-    )}
-  </button>
-);
-
 const InputField = ({ label, icon: Icon, ...props }: any) => (
   <div className="space-y-2">
     <label className="text-xs font-bold uppercase tracking-wider text-[#133020]/50 ml-1">
@@ -77,7 +43,7 @@ const InputField = ({ label, icon: Icon, ...props }: any) => (
       <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/30 group-focus-within:text-[#046241] transition-colors" size={18} />
       <input 
         {...props}
-        className="w-full bg-white border border-[#133020]/10 rounded-2xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-4 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+        className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-3.5 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
       />
     </div>
   </div>
@@ -85,43 +51,27 @@ const InputField = ({ label, icon: Icon, ...props }: any) => (
 
 const StatCard = ({ label, value, subtext }: any) => (
   <div className="flex flex-col">
-    <h4 className="text-3xl font-bold text-white mb-1">{value}</h4>
-    <p className="text-white/60 text-xs uppercase tracking-wider font-medium">{label}</p>
-    {subtext && <p className="text-white/40 text-[10px] mt-1">{subtext}</p>}
-  </div>
-);
-
-const ActivityItem = ({ icon: Icon, title, date, score, color }: any) => (
-  <div className="flex items-center gap-4 p-4 hover:bg-[#F9F7F7] transition-colors group cursor-pointer">
-    <div className={`w-12 h-12 flex items-center justify-center ${color === 'green' ? 'bg-[#046241] text-white' : 'bg-[#f5eedb] text-[#133020]'}`}>
-      {score ? <span className="font-bold">{score}</span> : <Icon size={20} />}
-    </div>
-    <div className="flex-1">
-      <h5 className="font-bold text-[#133020] text-sm group-hover:text-[#046241] transition-colors">{title}</h5>
-      <p className="text-[#133020]/40 text-xs">{date}</p>
-    </div>
-    <button className="text-[#133020]/20 group-hover:text-[#046241] transition-colors">
-      <ChevronRight size={16} />
-    </button>
+    <h4 className="text-3xl font-bold text-[#133020] mb-1">{value}</h4>
+    <p className="text-[#133020]/60 text-xs uppercase tracking-wider font-bold">{label}</p>
+    {subtext && <p className="text-[#133020]/40 text-[10px] mt-1 font-medium">{subtext}</p>}
   </div>
 );
 
 export const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>(null);
+  const [applicant, setApplicant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [school, setSchool] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [presentAddress, setPresentAddress] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
-    }
-  };
+  
+  const fullName = `${firstName} ${lastName}`.trim() || 'User';
   
   // Settings State
   const [password, setPassword] = useState('');
@@ -131,9 +81,11 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (hash === 'profile') setActiveTab('profile');
-      else if (hash === 'settings') setActiveTab('settings');
-      else setActiveTab('dashboard');
+      if (['dashboard', 'workstreams', 'analytics', 'profile', 'settings'].includes(hash)) {
+        setActiveTab(hash);
+      } else {
+        setActiveTab('dashboard');
+      }
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -145,7 +97,8 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) {
           window.location.hash = '#login';
           return;
@@ -159,6 +112,17 @@ export const DashboardPage: React.FC = () => {
           .eq('id', user.id)
           .single();
 
+        // Fetch applicant data
+        const { data: applicantData } = await supabase
+          .from('applicants')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+
+        if (applicantData) {
+          setApplicant(applicantData);
+        }
+
         if (profile) {
           if (profile.website === 'suspended') {
             await supabase.auth.signOut();
@@ -166,13 +130,19 @@ export const DashboardPage: React.FC = () => {
             alert('Your account has been suspended. Please contact the administrator.');
             return;
           }
-          setFullName(profile.first_name && profile.last_name ? `${profile.first_name} ${profile.last_name}` : profile.full_name || user.user_metadata?.full_name || 'User');
+          setFirstName(profile.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'User');
+          setLastName(profile.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
+          setContactNumber(profile.contact_number || '');
+          setSchool(profile.school || '');
+          setDesignation(profile.designation || '');
+          setPresentAddress(profile.present_address || '');
           setEmail(profile.email || user.email || '');
           if (profile.avatar_url) {
             setAvatarUrl(profile.avatar_url);
           }
         } else {
-          setFullName(user.user_metadata?.full_name || 'User');
+          setFirstName(user.user_metadata?.full_name?.split(' ')[0] || 'User');
+          setLastName(user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
           setEmail(user.email || '');
         }
       } catch (error) {
@@ -192,24 +162,78 @@ export const DashboardPage: React.FC = () => {
 
     try {
       const updates: any = {
-        data: { full_name: fullName },
+        data: { full_name: `${firstName} ${lastName}`.trim() },
       };
 
       if (email !== user.email) {
         updates.email = email;
       }
 
-      if (password) {
-        updates.password = password;
-      }
-
       const { data, error } = await supabase.auth.updateUser(updates);
 
       if (error) throw error;
 
+      // Update profile table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          contact_number: contactNumber,
+          school: school,
+          designation: designation,
+          present_address: presentAddress,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Update applicant table if exists
+      if (applicant) {
+        const { error: applicantError } = await supabase
+          .from('applicants')
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+            contact_number: contactNumber,
+            school: school,
+            designation: designation,
+            present_address: presentAddress
+          })
+          .eq('id', applicant.id);
+        
+        if (applicantError) throw applicantError;
+      }
+
       setUser(data.user);
-      setPassword(''); // Clear password field
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password) {
+      setMessage({ type: 'error', text: 'Please enter a new password.' });
+      return;
+    }
+    
+    setUpdating(true);
+    setMessage(null);
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+
+      setPassword(''); // Clear password field
+      setMessage({ type: 'success', text: 'Password updated successfully!' });
       
       // Clear success message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
@@ -251,351 +275,398 @@ export const DashboardPage: React.FC = () => {
     };
   }, [lastActivity]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-[#f5eedb] flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-4 border-[#046241] border-t-transparent rounded-full"></div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-[#133020] flex font-sans overflow-hidden relative">
+    <div className="min-h-screen bg-[#F9F7F7] flex font-sans overflow-hidden">
       {/* Sidebar */}
       <Sidebar 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={(tab: string) => {
+          setActiveTab(tab);
+          window.location.hash = `#${tab}`;
+        }} 
         onLogout={handleLogout} 
       />
 
       {/* Main Content */}
-      <main 
-        className={`flex-1 relative shadow-2xl shadow-black/50 h-screen overflow-hidden flex flex-col transition-all duration-500 ease-in-out ml-80 bg-[#f5eedb] text-[#133020]`}
-      >
-        <div className="p-6 md:p-8 w-full h-full flex flex-col gap-6">
-          
-          {/* Header / Theme Toggle */}
-          <div className="absolute top-6 right-8 z-50 flex items-center gap-4">
-            <a 
-              href="#profile"
-              className={`flex items-center gap-3 px-4 py-2 border rounded-full backdrop-blur-sm transition-all hover:bg-opacity-80 hover:scale-105 cursor-pointer bg-[#133020]/5 border-[#133020]/10`}
-            >
-               <div className="w-8 h-8 rounded-full bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold text-xs overflow-hidden">
-                 {avatarUrl ? (
-                   <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                 ) : (
-                   fullName.charAt(0).toUpperCase()
-                 )}
-               </div>
-               <span className={`text-sm font-bold text-[#133020]`}>{fullName}</span>
-            </a>
+      <main className="flex-1 relative h-screen overflow-hidden flex flex-col bg-[#F9F7F7] text-[#133020] ml-64">
+        
+        {/* Top Header */}
+        <header className="h-20 px-8 border-b border-[#133020]/5 bg-white flex items-center justify-between shrink-0 z-10">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-[#133020] capitalize">
+              {activeTab === 'dashboard' ? 'Overview' : activeTab}
+            </h1>
           </div>
 
-          {activeTab === 'profile' ? (
-            <div className="h-full overflow-y-auto custom-scrollbar pr-2">
+          <div className="flex items-center gap-6">
+            <button className="relative p-2 text-[#133020]/40 hover:text-[#046241] transition-colors">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FFB347] rounded-full border-2 border-white"></span>
+            </button>
+            
+            <div className="h-8 w-px bg-[#133020]/10"></div>
+
+            <button 
+              onClick={() => {
+                setActiveTab('profile');
+                window.location.hash = '#profile';
+              }}
+              className="flex items-center gap-3 group"
+            >
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-bold text-[#133020] group-hover:text-[#046241] transition-colors">{fullName}</p>
+                <p className="text-[10px] font-bold text-[#133020]/40 uppercase tracking-wider">{applicant?.position_applied || 'Data Specialist'}</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#f5eedb] border-2 border-white shadow-sm flex items-center justify-center text-[#133020] font-bold text-sm overflow-hidden group-hover:border-[#046241]/20 transition-colors">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  fullName.charAt(0).toUpperCase()
+                )}
+              </div>
+            </button>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+          
+          {activeTab === 'workstreams' ? (
+            <div className="p-8">
               <ProfilePage />
             </div>
-          ) : activeTab === 'settings' ? (
-             <div className="h-full overflow-y-auto custom-scrollbar pr-2 pt-16">
-               <div className="max-w-2xl mx-auto">
-                  <div className={`border rounded-[2.5rem] p-8 md:p-10 shadow-xl bg-white border-[#133020]/5 shadow-[#133020]/5`}>
-                      <h3 className={`text-xl font-bold mb-8 flex items-center gap-3 text-[#133020]`}>
-                        <div className="p-2 rounded-xl bg-[#FFB347]/20 text-[#133020]">
-                          <User size={24} />
-                        </div>
-                        Personal Information
-                      </h3>
-                      
-                      <form onSubmit={handleUpdateProfile} className="space-y-8">
-                      {message && (
-                          <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`p-4 rounded-xl text-sm flex items-center gap-3 font-medium ${
-                              message.type === 'success' 
-                              ? 'bg-[#046241]/10 text-[#046241] border border-[#046241]/20' 
-                              : 'bg-red-50 text-red-600 border border-red-100'
-                          }`}
-                          >
-                          {message.type === 'success' ? <Check size={18} /> : <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin" />}
-                          {message.text}
-                          </motion.div>
-                      )}
+          ) : activeTab === 'profile' ? (
+            <div className="p-8 max-w-3xl mx-auto">
+              <div className="bg-white border border-[#133020]/10 rounded-3xl p-8 md:p-10 shadow-sm">
+                  <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-[#133020]">
+                    <div className="p-2.5 rounded-xl bg-[#046241]/10 text-[#046241]">
+                      <User size={24} />
+                    </div>
+                    Personal Information
+                  </h3>
+                  
+                  <form onSubmit={handleUpdateProfile} className="space-y-8">
+                  {message && (
+                      <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-4 rounded-xl text-sm flex items-center gap-3 font-bold ${
+                          message.type === 'success' 
+                          ? 'bg-[#046241]/10 text-[#046241] border border-[#046241]/20' 
+                          : 'bg-red-50 text-red-600 border border-red-100'
+                      }`}
+                      >
+                      {message.type === 'success' ? <Check size={18} /> : <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin" />}
+                      {message.text}
+                      </motion.div>
+                  )}
 
+                  <div className="grid grid-cols-1 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InputField 
+                          label="First Name" 
+                          icon={User} 
+                          value={firstName}
+                          onChange={(e: any) => setFirstName(e.target.value)}
+                          placeholder="First Name"
+                        />
+                        <InputField 
+                          label="Last Name" 
+                          icon={User} 
+                          value={lastName}
+                          onChange={(e: any) => setLastName(e.target.value)}
+                          placeholder="Last Name"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InputField 
+                          label="Email Address" 
+                          icon={Mail} 
+                          type="email"
+                          value={email}
+                          onChange={(e: any) => setEmail(e.target.value)}
+                          placeholder="name@company.com"
+                        />
+                        <InputField 
+                          label="Contact Number" 
+                          icon={Phone} 
+                          value={contactNumber}
+                          onChange={(e: any) => setContactNumber(e.target.value)}
+                          placeholder="+1 234 567 8900"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <InputField 
+                          label="School" 
+                          icon={GraduationCap} 
+                          value={school}
+                          onChange={(e: any) => setSchool(e.target.value)}
+                          placeholder="University Name"
+                        />
+                        <InputField 
+                          label="Designation" 
+                          icon={Briefcase} 
+                          value={designation}
+                          onChange={(e: any) => setDesignation(e.target.value)}
+                          placeholder="Current Role"
+                        />
+                      </div>
                       <div className="grid grid-cols-1 gap-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField 
-                              label="Full Name" 
-                              icon={User} 
-                              value={fullName}
-                              onChange={(e: any) => setFullName(e.target.value)}
-                              placeholder="Your full name"
-                            />
-                            
-                            <InputField 
-                              label="Email Address" 
-                              icon={Mail} 
-                              type="email"
-                              value={email}
-                              onChange={(e: any) => setEmail(e.target.value)}
-                              placeholder="name@company.com"
-                            />
-                          </div>
-
-                          <div className={`pt-8 border-t border-[#133020]/5`}>
-                              <h4 className={`text-base font-bold mb-6 flex items-center gap-2 text-[#133020]`}>
-                                <Lock size={18} className={'text-[#133020]/40'} />
-                                Security
-                              </h4>
-                              <InputField 
-                                label="New Password" 
-                                icon={Lock} 
-                                type="password"
-                                value={password}
-                                onChange={(e: any) => setPassword(e.target.value)}
-                                placeholder="Leave blank to keep current"
-                              />
-                          </div>
+                        <InputField 
+                          label="Present Address" 
+                          icon={MapPin} 
+                          value={presentAddress}
+                          onChange={(e: any) => setPresentAddress(e.target.value)}
+                          placeholder="Full Address"
+                        />
                       </div>
-
-                      <div className="flex justify-end pt-4">
-                          <button 
-                          type="submit"
-                          disabled={updating}
-                          className="bg-[#046241] hover:bg-[#035436] rounded-2xl text-white px-8 py-4 font-bold transition-all shadow-lg shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-1 active:translate-y-0"
-                          >
-                          {updating ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
-                          </button>
-                      </div>
-                      </form>
                   </div>
-               </div>
-             </div>
+
+                  <div className="flex justify-end pt-4">
+                      <button 
+                      type="submit"
+                      disabled={updating}
+                      className="bg-[#046241] hover:bg-[#035436] rounded-xl text-white px-8 py-3.5 font-bold transition-all shadow-md shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-0.5"
+                      >
+                      {updating ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
+                      </button>
+                  </div>
+                  </form>
+              </div>
+            </div>
+          ) : activeTab === 'settings' ? (
+            <div className="p-8 max-w-3xl mx-auto">
+              <div className="bg-white border border-[#133020]/10 rounded-3xl p-8 md:p-10 shadow-sm">
+                  <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-[#133020]">
+                    <div className="p-2.5 rounded-xl bg-[#046241]/10 text-[#046241]">
+                      <Settings size={24} />
+                    </div>
+                    Account Settings
+                  </h3>
+                  
+                  <form onSubmit={handleUpdatePassword} className="space-y-8">
+                  {message && (
+                      <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-4 rounded-xl text-sm flex items-center gap-3 font-bold ${
+                          message.type === 'success' 
+                          ? 'bg-[#046241]/10 text-[#046241] border border-[#046241]/20' 
+                          : 'bg-red-50 text-red-600 border border-red-100'
+                      }`}
+                      >
+                      {message.type === 'success' ? <Check size={18} /> : <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin" />}
+                      {message.text}
+                      </motion.div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-6">
+                      <div className="pt-2">
+                          <h4 className="text-base font-bold mb-6 flex items-center gap-2 text-[#133020]">
+                            <Lock size={18} className="text-[#133020]/40" />
+                            Security
+                          </h4>
+                          <InputField 
+                            label="New Password" 
+                            icon={Lock} 
+                            type="password"
+                            value={password}
+                            onChange={(e: any) => setPassword(e.target.value)}
+                            placeholder="Leave blank to keep current"
+                          />
+                      </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                      <button 
+                      type="submit"
+                      disabled={updating}
+                      className="bg-[#046241] hover:bg-[#035436] rounded-xl text-white px-8 py-3.5 font-bold transition-all shadow-md shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-0.5"
+                      >
+                      {updating ? <Loader2 size={20} className="animate-spin" /> : 'Update Password'}
+                      </button>
+                  </div>
+                  </form>
+              </div>
+            </div>
+          ) : activeTab === 'analytics' ? (
+            <div className="p-8 flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-[#FFB347]/20 text-[#FFB347] rounded-full flex items-center justify-center mx-auto">
+                  <Target size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-[#133020]">Analytics Dashboard</h2>
+                <p className="text-[#133020]/60 font-medium">Detailed analytics are currently being generated for your account.</p>
+              </div>
+            </div>
           ) : (
-            <>
+            /* Dashboard Overview */
+            <div className="p-8 max-w-7xl mx-auto space-y-8 pb-12">
+              
               {/* Hero Section */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`rounded-[2.5rem] bg-[#046241] text-white p-8 md:p-12 relative overflow-hidden flex-shrink-0 flex flex-col justify-between transition-colors duration-300 min-h-[380px] mt-16`}
+                className="rounded-3xl bg-[#f5eedb] border border-[#133020]/10 p-8 md:p-10 relative overflow-hidden flex flex-col justify-between"
               >
-                {/* Background Animation */}
-                <div className="absolute inset-0 opacity-20 pointer-events-none">
-                    <Squares 
-                        direction="diagonal"
-                        speed={0.5}
-                        squareSize={40}
-                        borderColor="#ffffff"
-                        hoverFillColor="#046241"
-                    />
-                </div>
+                {/* Decorative Elements */}
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FFB347] rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#046241] rounded-full blur-[80px] opacity-10 pointer-events-none"></div>
                 
-                {/* Content */}
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-full items-center">
-                  <div className="lg:col-span-7 flex flex-col justify-center h-full space-y-6">
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  <div className="lg:col-span-7 space-y-6">
                     <div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffffff]/10 border border-white/10 text-xs font-medium text-white/80 mb-4 backdrop-blur-sm">
-                        <span className="w-2 h-2 rounded-full bg-[#FFB347] animate-pulse"></span>
-                        Module 12 of 24
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#133020]/10 text-xs font-bold text-[#133020]/80 mb-4 shadow-sm">
+                        <span className="w-2 h-2 rounded-full bg-[#046241] animate-pulse"></span>
+                        System Optimal
                       </div>
-                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-2 tracking-tight">
-                        Patterns & <br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFB347] to-[#FFC370]">Architecture.</span>
+                      <h1 className="text-4xl md:text-5xl font-bold leading-tight text-[#133020] mb-2">
+                        Welcome back, <br/>
+                        <span className="text-[#046241]">{applicant?.first_name || fullName.split(' ')[0]}</span>
                       </h1>
+                      <p className="text-[#133020]/60 font-medium text-lg max-w-md">
+                        You have 4 active tasks pending review. Your overall accuracy rate is up by 2.4% this week.
+                      </p>
                     </div>
 
-                    <div className="flex items-center gap-8">
-                      <StatCard label="Completion" value="82%" />
-                      <div className="w-px h-12 bg-white/10"></div>
-                      <StatCard label="Spent" value="14h" subtext="AVG 2h/day" />
-                      <div className="w-px h-12 bg-white/10"></div>
-                      <StatCard label="Avg Grade" value="A+" />
+                    <div className="flex flex-wrap items-center gap-8 pt-4">
+                      <StatCard label="Tasks Completed" value="1,284" />
+                      <div className="w-px h-12 bg-[#133020]/10"></div>
+                      <StatCard label="Accuracy Rate" value="98.2%" subtext="+2.4% this week" />
+                      <div className="w-px h-12 bg-[#133020]/10"></div>
+                      <StatCard label="Hours Logged" value="42h" />
                     </div>
-
-                    <button className="w-fit bg-[#FFB347] text-[#133020] px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-[#FFC370] transition-all shadow-lg shadow-[#FFB347]/20 group hover:shadow-[#FFB347]/40 hover:-translate-y-1">
-                      Continue Lesson
-                      <div className="bg-[#133020]/10 p-1 rounded-full group-hover:bg-[#133020]/20 transition-colors">
-                        <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </div>
-                    </button>
                   </div>
 
-                  {/* Calendar Widget (Visual) */}
-                  <div className="hidden lg:flex lg:col-span-5 justify-end items-center">
-                    <div className="bg-[#060010]/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB347] rounded-full blur-[60px] opacity-10 group-hover:opacity-20 transition-opacity"></div>
-                      
-                      <div className="flex justify-between items-center mb-6 relative z-10">
+                  <div className="hidden lg:flex lg:col-span-5 justify-end">
+                    <div className="bg-white border border-[#133020]/10 rounded-3xl p-6 w-full max-w-sm shadow-sm relative group">
+                      <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h4 className="text-lg font-bold text-white">March 2026</h4>
-                            <p className="text-white/40 text-xs">Thursday, 12th</p>
+                            <h4 className="text-lg font-bold text-[#133020]">Current Focus</h4>
+                            <p className="text-[#133020]/40 text-xs font-bold uppercase tracking-wider">Project Hercules</p>
                         </div>
-                        <div className="flex gap-2">
-                          <div className="w-2 h-2 rounded-full bg-[#046241]"></div>
-                          <div className="w-2 h-2 rounded-full bg-[#FFB347] animate-pulse"></div>
+                        <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 text-[#133020] flex items-center justify-center">
+                          <Target size={20} />
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-7 gap-2 text-center relative z-10">
-                        {['S','M','T','W','T','F','S'].map((d, i) => (
-                          <div key={i} className="text-white/30 text-[10px] font-bold py-2 uppercase tracking-wider">{d}</div>
-                        ))}
-                        {Array.from({length: 31}).map((_, i) => (
-                          <div 
-                            key={i} 
-                            className={`
-                              aspect-square flex items-center justify-center rounded-xl text-xs font-medium transition-all duration-300
-                              ${i === 11 ? 'bg-[#FFB347] text-[#133020] font-bold shadow-lg shadow-[#FFB347]/30 scale-110' : 'text-white/70 hover:bg-white/10 cursor-pointer hover:scale-105'}
-                              ${[8, 14, 21, 28].includes(i) ? 'relative after:absolute after:bottom-1.5 after:w-1 after:h-1 after:bg-[#046241] after:rounded-full' : ''}
-                            `}
-                          >
-                            {i + 1}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm font-bold text-[#133020]">
+                            <span>Video Annotation</span>
+                            <span>75%</span>
                           </div>
-                        ))}
+                          <div className="w-full h-2 bg-[#F9F7F7] rounded-full overflow-hidden">
+                            <div className="h-full bg-[#046241] rounded-full w-3/4"></div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            setActiveTab('workstreams');
+                            window.location.hash = '#workstreams';
+                          }}
+                          className="w-full py-3 rounded-xl bg-[#133020] text-white font-bold text-sm hover:bg-[#046241] transition-colors flex items-center justify-center gap-2 mt-4"
+                        >
+                          Continue Work
+                          <ArrowUpRight size={16} />
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Custom Grid Layout */}
-              <div className="flex-1 min-h-0 overflow-hidden relative mt-6">
-                 <div className="absolute inset-0 overflow-y-auto custom-scrollbar pb-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
-                      
-                      {/* Profile Card (Left) */}
-                      <div className="lg:col-span-1 bg-[#060010] rounded-[2.5rem] p-8 flex flex-col items-center justify-between relative overflow-hidden group border border-white/5 shadow-2xl">
-                        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB347] rounded-full blur-[80px] opacity-10"></div>
-                        
-                        <div className="flex-1 flex flex-col items-center justify-center w-full relative z-10">
-                          <div className="w-32 h-32 rounded-full border border-white/10 flex items-center justify-center mb-6 relative group-hover:scale-105 transition-transform duration-500">
-                             {avatarUrl ? (
-                               <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                             ) : (
-                               <User size={48} className="text-white/20" />
-                             )}
-                             <div className="absolute inset-0 rounded-full border border-white/5 animate-ping opacity-20"></div>
-                          </div>
-                          
-                          <button 
-                            onClick={() => setActiveTab('profile')}
-                            className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white text-xs font-bold tracking-widest hover:bg-white hover:text-black transition-all duration-300 uppercase"
-                          >
-                            <Settings size={14} />
-                            Edit Profile
-                          </button>
-                        </div>
-
-                        <div className="w-full bg-[#133020] rounded-[1.5rem] p-4 flex items-center justify-between relative z-10 border border-white/5 group-hover:border-white/10 transition-colors">
-                           <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm overflow-hidden">
-                               {avatarUrl ? (
-                                 <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                               ) : (
-                                 fullName.charAt(0).toUpperCase()
-                               )}
-                             </div>
-                             <div>
-                               <h4 className="text-white text-sm font-bold leading-tight">{fullName}</h4>
-                               <p className="text-white/40 text-[10px] uppercase tracking-wider">Lifewood PH Intern</p>
-                             </div>
-                           </div>
-                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black">
-                             <Award size={20} />
-                           </div>
-                        </div>
-                      </div>
-
-                      {/* Activity Card (Center) */}
-                      <div className="lg:col-span-2 bg-[#F2F2F2] rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden shadow-xl">
-                        <div className="flex justify-between items-start mb-8">
-                          <div>
-                            <h3 className="text-2xl font-bold text-black mb-1">Activity</h3>
-                            <p className="text-black/40 text-sm font-medium">Recent updates</p>
-                          </div>
-                          <button className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black/40 hover:text-black transition-colors">
-                            <MoreHorizontal size={20} />
-                          </button>
-                        </div>
-
-                        <div className="space-y-4 flex-1">
-                          {/* Highlighted Item */}
-                          <div className="bg-black rounded-[1.5rem] p-5 flex items-center gap-5 text-white shadow-lg transform hover:scale-[1.02] transition-transform duration-300 cursor-pointer">
-                            <div className="w-12 h-12 rounded-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)]">
-                              98%
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg mb-0.5">Quiz Score: React Hooks</h4>
-                              <p className="text-white/40 text-xs font-medium">27 Feb, 2026</p>
-                            </div>
-                          </div>
-
-                          {/* Standard Items */}
-                          <div className="flex items-center gap-5 p-4 hover:bg-white/50 rounded-[1.5rem] transition-colors cursor-pointer group">
-                             <div className="w-12 h-12 rounded-full bg-[#E0E0E0] flex items-center justify-center text-black/60 font-bold text-xs group-hover:bg-white transition-colors">
-                               x2
-                             </div>
-                             <div className="flex-1">
-                               <h4 className="font-bold text-black text-sm mb-0.5">Productivity Streak</h4>
-                               <p className="text-black/40 text-xs font-medium">Increased limits on tasks</p>
-                             </div>
-                          </div>
-
-                          <div className="flex items-center gap-5 p-4 hover:bg-white/50 rounded-[1.5rem] transition-colors cursor-pointer group">
-                             <div className="w-12 h-12 rounded-full bg-[#E0E0E0] flex items-center justify-center text-black/60 font-bold text-xs group-hover:bg-white transition-colors">
-                               2%
-                             </div>
-                             <div className="flex-1">
-                               <h4 className="font-bold text-black text-sm mb-0.5">Optimization Bonus</h4>
-                               <p className="text-black/40 text-xs font-medium">Code quality improvement</p>
-                             </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="lg:col-span-1 flex flex-col gap-6">
-                        {/* Efficiency Card */}
-                        <div className="bg-[#ccff00] rounded-[2.5rem] p-6 relative overflow-hidden shadow-xl group hover:-translate-y-1 transition-transform duration-300">
-                           <div className="flex justify-between items-start mb-6">
-                             <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Efficiency</span>
-                             <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
-                               <Zap size={14} />
-                             </div>
-                           </div>
-                           <h3 className="text-4xl font-bold text-black mb-1">98%</h3>
-                           <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
-                        </div>
-
-                        {/* Level Card */}
-                        <div className="bg-black rounded-[2.5rem] p-6 relative overflow-hidden shadow-xl group hover:-translate-y-1 transition-transform duration-300">
-                           <div className="flex justify-between items-start mb-6">
-                             <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">Level</span>
-                             <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
-                               <User size={14} />
-                             </div>
-                           </div>
-                           <h3 className="text-4xl font-bold text-white mb-1">04</h3>
-                           <p className="text-white/40 text-xs font-medium">Senior Intern</p>
-                        </div>
-
-                        {/* Weekly Goals Card */}
-                        <div className="bg-[#E0E0E0] rounded-[2.5rem] p-6 flex items-center justify-between shadow-lg group hover:bg-white transition-colors duration-300 cursor-pointer">
-                           <div className="flex items-center gap-4">
-                             <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center text-black/40 group-hover:bg-black/10 transition-colors">
-                               <Target size={18} />
-                             </div>
-                             <div>
-                               <h4 className="font-bold text-black text-sm">Weekly Goals</h4>
-                               <p className="text-black/40 text-[10px] font-medium">4 tasks remaining</p>
-                             </div>
-                           </div>
-                           <ChevronRight size={18} className="text-black/20 group-hover:text-black transition-colors" />
-                        </div>
-                      </div>
-
+              {/* Grid Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Activity Feed */}
+                <div className="lg:col-span-2 bg-white border border-[#133020]/10 rounded-3xl p-8 shadow-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-[#133020]">Recent Activity</h3>
+                      <p className="text-[#133020]/50 text-sm font-medium">Your latest actions and updates</p>
                     </div>
-                 </div>
+                    <button className="text-sm font-bold text-[#046241] hover:text-[#133020] transition-colors">View All</button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Highlighted Item */}
+                    <div className="bg-[#f5eedb] border border-[#133020]/10 rounded-2xl p-5 flex items-center gap-5 text-[#133020] transition-transform duration-300 hover:-translate-y-1 cursor-pointer">
+                      <div className="w-12 h-12 rounded-full bg-[#FFB347] flex items-center justify-center text-[#133020] font-bold shadow-sm">
+                        <Award size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-lg mb-0.5">Achieved 99% Accuracy</h4>
+                        <p className="text-[#133020]/60 text-sm font-medium">Project Titan • 2 hours ago</p>
+                      </div>
+                    </div>
+
+                    {/* Standard Items */}
+                    <div className="flex items-center gap-5 p-4 hover:bg-[#F9F7F7] rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-[#133020]/5">
+                        <div className="w-12 h-12 rounded-full bg-[#133020]/5 flex items-center justify-center text-[#133020]/60">
+                          <Check size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-[#133020] text-sm mb-0.5">Completed Batch #8492</h4>
+                          <p className="text-[#133020]/50 text-xs font-medium">Video Annotation • 5 hours ago</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-5 p-4 hover:bg-[#F9F7F7] rounded-2xl transition-colors cursor-pointer border border-transparent hover:border-[#133020]/5">
+                        <div className="w-12 h-12 rounded-full bg-[#133020]/5 flex items-center justify-center text-[#133020]/60">
+                          <Zap size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-[#133020] text-sm mb-0.5">Speed Bonus Unlocked</h4>
+                          <p className="text-[#133020]/50 text-xs font-medium">Maintained &gt;50 tasks/hr • Yesterday</p>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="lg:col-span-1 flex flex-col gap-6">
+                  {/* Efficiency Card */}
+                  <div className="bg-[#046241] rounded-3xl p-8 relative overflow-hidden shadow-md group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <span className="text-xs font-bold uppercase tracking-widest text-white/80">Efficiency Score</span>
+                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-sm">
+                          <Zap size={18} />
+                        </div>
+                      </div>
+                      <h3 className="text-5xl font-bold text-white mb-2 relative z-10">98<span className="text-2xl text-white/60">%</span></h3>
+                      <p className="text-white/80 text-sm font-medium relative z-10">Top 5% of annotators</p>
+                      
+                      {/* Decorative Background */}
+                      <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#FFB347] rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                  </div>
+
+                  {/* Level Card */}
+                  <div className="bg-white border border-[#133020]/10 rounded-3xl p-8 relative overflow-hidden shadow-sm group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="text-xs font-bold uppercase tracking-widest text-[#133020]/50">Current Level</span>
+                        <div className="w-10 h-10 rounded-full bg-[#133020]/5 flex items-center justify-center text-[#133020]">
+                          <User size={18} />
+                        </div>
+                      </div>
+                      <h3 className="text-4xl font-bold text-[#133020] mb-1">Level 4</h3>
+                      <p className="text-[#133020]/60 text-sm font-medium">Senior Data Specialist</p>
+                  </div>
+                </div>
+
               </div>
-            </>
+            </div>
           )}
         </div>
       </main>
     </div>
   );
 };
+
+export default DashboardPage;

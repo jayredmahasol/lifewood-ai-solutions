@@ -66,7 +66,7 @@ function App() {
   const isAdminApplicantsPage = currentRoute === '#admin-applicants';
   const isAdminNotificationsPage = currentRoute === '#admin-notifications';
   const isAdminFeedbackPage = currentRoute === '#admin-feedback';
-  const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings';
+  const isDashboardPage = currentRoute === '#dashboard' || currentRoute === '#profile' || currentRoute === '#settings' || currentRoute === '#workstreams' || currentRoute === '#analytics';
 
   return (
     <div className="min-h-screen bg-lifewood-beige text-lifewood-darkGreen selection:bg-lifewood-primaryGreen selection:text-white font-sans">
