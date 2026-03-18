@@ -17,7 +17,17 @@ import {
   GraduationCap,
   Briefcase,
   MapPin,
-  Settings
+  Settings,
+  Camera,
+  Calendar,
+  Hash,
+  Heart,
+  Map,
+  Clock,
+  Users,
+  Activity,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Sidebar from './Sidebar';
@@ -34,20 +44,109 @@ const colors = {
   earthYellow: '#FFC370',
 };
 
-const InputField = ({ label, icon: Icon, ...props }: any) => (
+const InputField = ({ label, icon: Icon, required, ...props }: any) => (
   <div className="space-y-2">
     <label className="text-xs font-bold uppercase tracking-wider text-[#133020]/50 ml-1">
-      {label}
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative group">
       <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/30 group-focus-within:text-[#046241] transition-colors" size={18} />
       <input 
+        required={required}
         {...props}
         className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-3.5 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
       />
     </div>
   </div>
 );
+
+const SelectField = ({ label, icon: Icon, options, required, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="text-xs font-bold uppercase tracking-wider text-[#133020]/50 ml-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative group">
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/30 group-focus-within:text-[#046241] transition-colors" size={18} />
+      <select 
+        required={required}
+        {...props}
+        className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-3.5 pl-12 pr-4 outline-none text-[#133020] placeholder:text-[#133020]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm appearance-none"
+      >
+        <option value="" disabled>Select {label}</option>
+        {options.map((opt: any) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#133020]/30">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+  </div>
+);
+
+const SchoolSelect = ({ value, onChange, required }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const schools = [
+    { value: 'University of Cebu – Lapu-Lapu and Mandaue', label: 'University of Cebu – Lapu-Lapu and Mandaue', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/University_of_Cebu_Logo.png/220px-University_of_Cebu_Logo.png' },
+    { value: 'Cebu Institute of Technology – University', label: 'Cebu Institute of Technology – University', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/74/Cebu_Institute_of_Technology_-_University_logo.png/220px-Cebu_Institute_of_Technology_-_University_logo.png' },
+    { value: 'Asian College of Technology', label: 'Asian College of Technology', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/3/30/Asian_College_of_Technology_logo.png/220px-Asian_College_of_Technology_logo.png' },
+    { value: 'University of San Carlos', label: 'University of San Carlos', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e9/University_of_San_Carlos_logo.png/220px-University_of_San_Carlos_logo.png' }
+  ];
+
+  const selectedSchool = schools.find(s => s.value === value);
+
+  return (
+    <div className="space-y-2 relative">
+      <label className="text-xs font-bold uppercase tracking-wider text-[#133020]/50 ml-1">
+        School {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="relative group">
+        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/30 group-focus-within:text-[#046241] transition-colors z-10" size={18} />
+        
+        {/* Hidden input for form validation */}
+        <input type="text" value={value || ''} onChange={() => {}} required={required} className="absolute opacity-0 w-full h-full pointer-events-none" tabIndex={-1} />
+        
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl focus:border-[#046241] focus:ring-4 focus:ring-[#046241]/5 py-3.5 pl-12 pr-4 outline-none text-[#133020] transition-all duration-300 shadow-sm flex items-center justify-between"
+        >
+          {selectedSchool ? (
+            <div className="flex items-center gap-3">
+              <img src={selectedSchool.logo} alt={selectedSchool.label} className="w-6 h-6 object-contain" />
+              <span className="truncate text-left">{selectedSchool.label}</span>
+            </div>
+          ) : (
+            <span className="text-[#133020]/30">Select School</span>
+          )}
+          <div className="text-[#133020]/30">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </button>
+
+        {isOpen && (
+          <div className="absolute top-full left-0 w-full mt-2 bg-white border border-[#133020]/10 rounded-xl shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto">
+            {schools.map((school) => (
+              <button
+                key={school.value}
+                type="button"
+                onClick={() => {
+                  onChange({ target: { value: school.value } });
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F9F7F7] transition-colors ${value === school.value ? 'bg-[#046241]/5' : ''}`}
+              >
+                <img src={school.logo} alt={school.label} className="w-8 h-8 object-contain" />
+                <span className="text-sm font-medium text-left">{school.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const StatCard = ({ label, value, subtext }: any) => (
   <div className="flex flex-col">
@@ -63,13 +162,32 @@ export const DashboardPage: React.FC = () => {
   const [applicant, setApplicant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [school, setSchool] = useState('');
   const [designation, setDesignation] = useState('');
+  const [internshipCoordinator, setInternshipCoordinator] = useState('');
+  const [requiredHours, setRequiredHours] = useState('');
+  const [educationalBackground, setEducationalBackground] = useState('');
+  const [gender, setGender] = useState('');
+  const [dob, setDob] = useState('');
+  const [age, setAge] = useState('');
+  const [status, setStatus] = useState('');
+  const [permanentAddress, setPermanentAddress] = useState('');
   const [presentAddress, setPresentAddress] = useState('');
+  const [distance, setDistance] = useState('');
+  const [timeTravel, setTimeTravel] = useState('');
+  const [emergencyName, setEmergencyName] = useState('');
+  const [emergencyRelationship, setEmergencyRelationship] = useState('');
+  const [emergencyAddress, setEmergencyAddress] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
   
   const fullName = `${firstName} ${lastName}`.trim() || 'User';
   
@@ -131,11 +249,26 @@ export const DashboardPage: React.FC = () => {
             return;
           }
           setFirstName(profile.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'User');
+          setMiddleName(profile.middle_name || '');
           setLastName(profile.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
           setContactNumber(profile.contact_number || '');
           setSchool(profile.school || '');
           setDesignation(profile.designation || '');
+          setInternshipCoordinator(profile.internship_coordinator || '');
+          setRequiredHours(profile.required_hours || '');
+          setEducationalBackground(profile.educational_background || '');
+          setGender(profile.gender || '');
+          setDob(profile.dob || '');
+          setAge(profile.age || '');
+          setStatus(profile.status || '');
+          setPermanentAddress(profile.permanent_address || '');
           setPresentAddress(profile.present_address || '');
+          setDistance(profile.distance || '');
+          setTimeTravel(profile.time_travel || '');
+          setEmergencyName(profile.emergency_name || '');
+          setEmergencyRelationship(profile.emergency_relationship || '');
+          setEmergencyAddress(profile.emergency_address || '');
+          setEmergencyContact(profile.emergency_contact || '');
           setEmail(profile.email || user.email || '');
           if (profile.avatar_url) {
             setAvatarUrl(profile.avatar_url);
@@ -178,11 +311,26 @@ export const DashboardPage: React.FC = () => {
         .from('profiles')
         .update({
           first_name: firstName,
+          middle_name: middleName,
           last_name: lastName,
           contact_number: contactNumber,
           school: school,
           designation: designation,
+          internship_coordinator: internshipCoordinator,
+          required_hours: requiredHours,
+          educational_background: educationalBackground,
+          gender: gender,
+          dob: dob,
+          age: age,
+          status: status,
+          permanent_address: permanentAddress,
           present_address: presentAddress,
+          distance: distance,
+          time_travel: timeTravel,
+          emergency_name: emergencyName,
+          emergency_relationship: emergencyRelationship,
+          emergency_address: emergencyAddress,
+          emergency_contact: emergencyContact,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -215,6 +363,53 @@ export const DashboardPage: React.FC = () => {
       setMessage({ type: 'error', text: err.message });
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingAvatar(true);
+      setMessage(null);
+
+      if (!e.target.files || e.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
+
+      const file = e.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -342,14 +537,67 @@ export const DashboardPage: React.FC = () => {
               <ProfilePage />
             </div>
           ) : activeTab === 'profile' ? (
-            <div className="p-8 max-w-3xl mx-auto">
+            <div className="p-8 max-w-4xl mx-auto">
               <div className="bg-white border border-[#133020]/10 rounded-3xl p-8 md:p-10 shadow-sm">
-                  <h3 className="text-2xl font-bold mb-8 flex items-center gap-3 text-[#133020]">
-                    <div className="p-2.5 rounded-xl bg-[#046241]/10 text-[#046241]">
-                      <User size={24} />
+                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+                    <h3 className="text-2xl font-bold flex items-center gap-3 text-[#133020]">
+                      <div className="p-2.5 rounded-xl bg-[#046241]/10 text-[#046241]">
+                        <User size={24} />
+                      </div>
+                      Personal Information
+                    </h3>
+                    
+                    {/* Avatar Upload */}
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 rounded-full bg-[#f5eedb] border-2 border-white shadow-sm flex items-center justify-center text-[#133020] font-bold text-xl overflow-hidden">
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            fullName.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#046241] rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-[#035436] transition-colors shadow-sm">
+                          {uploadingAvatar ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                        </label>
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-bold text-[#133020]">Profile Picture</p>
+                        <p className="text-[#133020]/50 text-xs">JPG, PNG or GIF (Max 2MB)</p>
+                      </div>
                     </div>
-                    Personal Information
-                  </h3>
+                  </div>
+
+                  {/* Stepper Progress */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between relative">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#F9F7F7] rounded-full -z-10"></div>
+                      <div 
+                        className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#046241] rounded-full -z-10 transition-all duration-500"
+                        style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+                      ></div>
+                      
+                      {[1, 2, 3, 4].map((step) => (
+                        <div 
+                          key={step}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                            currentStep >= step 
+                              ? 'bg-[#046241] text-white shadow-md shadow-[#046241]/20' 
+                              : 'bg-white text-[#133020]/40 border-2 border-[#F9F7F7]'
+                          }`}
+                        >
+                          {currentStep > step ? <Check size={14} /> : step}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-[#133020]/50">
+                      <span>Personal</span>
+                      <span>Education</span>
+                      <span>Address</span>
+                      <span>Emergency</span>
+                    </div>
+                  </div>
                   
                   <form onSubmit={handleUpdateProfile} className="space-y-8">
                   {message && (
@@ -367,75 +615,119 @@ export const DashboardPage: React.FC = () => {
                       </motion.div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InputField 
-                          label="First Name" 
-                          icon={User} 
-                          value={firstName}
-                          onChange={(e: any) => setFirstName(e.target.value)}
-                          placeholder="First Name"
-                        />
-                        <InputField 
-                          label="Last Name" 
-                          icon={User} 
-                          value={lastName}
-                          onChange={(e: any) => setLastName(e.target.value)}
-                          placeholder="Last Name"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InputField 
-                          label="Email Address" 
-                          icon={Mail} 
-                          type="email"
-                          value={email}
-                          onChange={(e: any) => setEmail(e.target.value)}
-                          placeholder="name@company.com"
-                        />
-                        <InputField 
-                          label="Contact Number" 
-                          icon={Phone} 
-                          value={contactNumber}
-                          onChange={(e: any) => setContactNumber(e.target.value)}
-                          placeholder="+1 234 567 8900"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <InputField 
-                          label="School" 
-                          icon={GraduationCap} 
-                          value={school}
-                          onChange={(e: any) => setSchool(e.target.value)}
-                          placeholder="University Name"
-                        />
-                        <InputField 
-                          label="Designation" 
-                          icon={Briefcase} 
-                          value={designation}
-                          onChange={(e: any) => setDesignation(e.target.value)}
-                          placeholder="Current Role"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 gap-6">
-                        <InputField 
-                          label="Present Address" 
-                          icon={MapPin} 
-                          value={presentAddress}
-                          onChange={(e: any) => setPresentAddress(e.target.value)}
-                          placeholder="Full Address"
-                        />
-                      </div>
+                  <div className="min-h-[300px]">
+                    {currentStep === 1 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <InputField label="First Name" icon={User} value={firstName} onChange={(e: any) => setFirstName(e.target.value)} placeholder="First Name" required />
+                          <InputField label="Middle Name" icon={User} value={middleName} onChange={(e: any) => setMiddleName(e.target.value)} placeholder="Middle Name" />
+                          <InputField label="Last Name" icon={User} value={lastName} onChange={(e: any) => setLastName(e.target.value)} placeholder="Last Name" required />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <SelectField label="Gender" icon={Users} value={gender} onChange={(e: any) => setGender(e.target.value)} options={[
+                            { value: 'Male', label: 'Male' },
+                            { value: 'Female', label: 'Female' },
+                            { value: 'Other', label: 'Other' },
+                            { value: 'Prefer not to say', label: 'Prefer not to say' }
+                          ]} required />
+                          <InputField label="Date of Birth" icon={Calendar} type="date" value={dob} onChange={(e: any) => setDob(e.target.value)} required />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Age" icon={Hash} type="number" value={age} onChange={(e: any) => setAge(e.target.value)} placeholder="Age" required />
+                          <SelectField label="Status" icon={Heart} value={status} onChange={(e: any) => setStatus(e.target.value)} options={[
+                            { value: 'Single', label: 'Single' },
+                            { value: 'Married', label: 'Married' },
+                            { value: 'Divorced', label: 'Divorced' },
+                            { value: 'Widowed', label: 'Widowed' }
+                          ]} required />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Email Address" icon={Mail} type="email" value={email} onChange={(e: any) => setEmail(e.target.value)} placeholder="name@company.com" required />
+                          <InputField label="Contact Number" icon={Phone} value={contactNumber} onChange={(e: any) => setContactNumber(e.target.value)} placeholder="+1 234 567 8900" required />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 gap-6">
+                          <SchoolSelect value={school} onChange={(e: any) => setSchool(e.target.value)} required />
+                          <InputField label="Educational Background" icon={Briefcase} value={educationalBackground} onChange={(e: any) => setEducationalBackground(e.target.value)} placeholder="e.g. BS Information Technology" required />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Designation" icon={Briefcase} value={designation} onChange={(e: any) => setDesignation(e.target.value)} placeholder="Current Role" required />
+                          <InputField label="Internship Coordinator" icon={User} value={internshipCoordinator} onChange={(e: any) => setInternshipCoordinator(e.target.value)} placeholder="Coordinator Name" required />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Required OJT Hours" icon={Clock} type="number" value={requiredHours} onChange={(e: any) => setRequiredHours(e.target.value)} placeholder="e.g. 500" required />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 gap-6">
+                        <InputField label="Permanent Address" icon={MapPin} value={permanentAddress} onChange={(e: any) => setPermanentAddress(e.target.value)} placeholder="Full Permanent Address" required />
+                        <InputField label="Present Address" icon={MapPin} value={presentAddress} onChange={(e: any) => setPresentAddress(e.target.value)} placeholder="Full Present Address" required />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Distance (km)" icon={Map} type="number" step="0.1" value={distance} onChange={(e: any) => setDistance(e.target.value)} placeholder="Distance from office" required />
+                          <InputField label="Time Travel (min)" icon={Clock} type="number" value={timeTravel} onChange={(e: any) => setTimeTravel(e.target.value)} placeholder="Estimated travel time" required />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 4 && (
+                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Contact Person" icon={User} value={emergencyName} onChange={(e: any) => setEmergencyName(e.target.value)} placeholder="Emergency Contact Name" required />
+                          <InputField label="Relationship" icon={Users} value={emergencyRelationship} onChange={(e: any) => setEmergencyRelationship(e.target.value)} placeholder="e.g. Parent, Sibling" required />
+                        </div>
+                        <InputField label="Address" icon={MapPin} value={emergencyAddress} onChange={(e: any) => setEmergencyAddress(e.target.value)} placeholder="Emergency Contact Address" required />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField label="Contact Number" icon={Phone} value={emergencyContact} onChange={(e: any) => setEmergencyContact(e.target.value)} placeholder="Emergency Contact Number" required />
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
 
-                  <div className="flex justify-end pt-4">
+                  <div className="flex justify-between pt-6 border-t border-[#133020]/5 mt-8">
                       <button 
-                      type="submit"
-                      disabled={updating}
-                      className="bg-[#046241] hover:bg-[#035436] rounded-xl text-white px-8 py-3.5 font-bold transition-all shadow-md shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-0.5"
+                        type="button"
+                        onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
+                        className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors ${currentStep === 1 ? 'opacity-0 pointer-events-none' : 'text-[#133020]/60 hover:bg-[#F9F7F7]'}`}
                       >
-                      {updating ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
+                        <ChevronLeft size={18} /> Back
                       </button>
+                      
+                      {currentStep < totalSteps ? (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            // Basic validation before proceeding
+                            let isValid = true;
+                            const form = document.querySelector('form');
+                            if (form) {
+                              isValid = form.checkValidity();
+                              if (!isValid) {
+                                form.reportValidity();
+                              }
+                            }
+                            if (isValid) {
+                              setCurrentStep(prev => Math.min(totalSteps, prev + 1));
+                            }
+                          }}
+                          className="bg-[#133020] hover:bg-[#0f2619] rounded-xl text-white px-8 py-3 font-bold transition-all flex items-center gap-2"
+                        >
+                          Next <ChevronRight size={18} />
+                        </button>
+                      ) : (
+                        <button 
+                          type="submit"
+                          disabled={updating}
+                          className="bg-[#046241] hover:bg-[#035436] rounded-xl text-white px-8 py-3 font-bold transition-all shadow-md shadow-[#046241]/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 hover:-translate-y-0.5"
+                        >
+                          {updating ? <Loader2 size={20} className="animate-spin" /> : 'Save Profile'}
+                        </button>
+                      )}
                   </div>
                   </form>
               </div>
