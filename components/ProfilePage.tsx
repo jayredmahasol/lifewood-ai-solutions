@@ -100,7 +100,7 @@ export const ProfilePage = () => {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-[#133020]/10 rounded-2xl p-6 flex flex-col gap-6 hover:border-[#046241]/30 hover:shadow-lg hover:shadow-[#046241]/5 transition-all"
+      className="bg-white border border-[#133020]/10 rounded-2xl p-6 flex flex-col gap-6 hover:border-[#046241]/30 hover:shadow-lg hover:shadow-[#046241]/5 transition-[border-color,box-shadow] duration-300"
     >
       <div className="flex justify-between items-start gap-4">
         <h4 className="text-[#133020] font-bold text-lg leading-tight">{workstream.name}</h4>

@@ -4,6 +4,8 @@ import {
   Bell, CheckCircle, AlertTriangle, Info, X, Trash2, User, LogOut
 } from 'lucide-react';
 
+import AdminSidebar from './AdminSidebar';
+
 export interface AdminNotification {
   id: string;
   type: 'success' | 'error' | 'info' | 'warning';
@@ -95,62 +97,42 @@ export const AdminNotificationsPage = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-[#f5eedb] font-sans flex flex-col">
-      {/* Admin Header */}
-      <header className="bg-[#133020] text-white px-8 py-4 flex items-center justify-between sticky top-0 z-50 shadow-md">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1">
-              <img src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png" alt="Lifewood Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold leading-tight">Admin Dashboard</h1>
-              <p className="text-white/60 text-xs">Manage Lifewood Notifications</p>
-            </div>
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-2 ml-8">
-            <a href="#admin-dashboard" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
-              Users
-            </a>
-            <a href="#admin-applicants" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
-              Applicants
-            </a>
-            <a href="#admin-notifications" className="px-4 py-2 bg-white/10 text-white rounded-lg font-medium text-sm transition-colors relative">
-              Notifications
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </a>
-            <a href="#admin-feedback" className="px-4 py-2 text-white/60 hover:bg-white/5 hover:text-white rounded-lg font-medium text-sm transition-colors">
-              Feedback
-            </a>
-          </nav>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-              <User size={16} />
-            </div>
-            <span className="text-sm font-medium">Administrator</span>
-          </div>
-          <div className="w-px h-6 bg-white/10"></div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-white/60 hover:text-red-400 transition-colors text-sm font-medium"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F9F7F7] flex font-sans overflow-hidden">
+      <AdminSidebar activeTab="admin-notifications" onLogout={handleLogout} />
 
       {/* Main Content */}
-      <main className="flex-1 p-8 max-w-5xl mx-auto w-full">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <main className="flex-1 relative h-screen overflow-hidden flex flex-col bg-[#F9F7F7] text-[#133020] ml-64">
+        
+        {/* Top Header */}
+        <header className="h-20 px-8 border-b border-[#133020]/5 bg-white flex items-center justify-between shrink-0 z-10">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-[#133020]">Notifications</h1>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <button className="relative p-2 text-[#133020]/60 hover:text-[#133020] transition-colors rounded-full hover:bg-[#133020]/5">
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
+            </button>
+            <div className="w-px h-6 bg-[#133020]/10"></div>
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-bold text-[#133020]">Administrator</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#133020]/40">System Admin</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#046241] text-white flex items-center justify-center font-bold overflow-hidden">
+                A
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+          <div className="max-w-5xl mx-auto w-full">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-3xl font-bold text-[#133020] flex items-center gap-3">
               <Bell size={28} />
@@ -230,6 +212,8 @@ export const AdminNotificationsPage = () => {
               </AnimatePresence>
             </div>
           )}
+        </div>
+          </div>
         </div>
       </main>
     </div>

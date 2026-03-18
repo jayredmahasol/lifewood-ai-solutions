@@ -936,7 +936,7 @@ export const DashboardPage: React.FC = () => {
                       <p className="text-white/80 text-sm font-medium relative z-10">Top 5% of annotators</p>
                       
                       {/* Decorative Background */}
-                      <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#FFB347] rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                      <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#FFB347] rounded-full blur-[60px] opacity-20"></div>
                   </div>
 
                   {/* Level Card */}
