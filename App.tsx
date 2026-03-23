@@ -191,9 +191,9 @@ function App() {
                          <a href="#contact" className="px-6 py-3 bg-lifewood-orange rounded-full font-medium text-sm hover:bg-lifewood-lightOrange transition-colors">
                              Contact us now
                          </a>
-                         <button className="px-6 py-3 border border-lifewood-darkGreen rounded-full font-medium text-sm hover:bg-lifewood-darkGreen hover:text-white transition-colors flex items-center gap-2">
+                         <a href="#ai-services" className="px-6 py-3 border border-lifewood-darkGreen rounded-full font-medium text-sm hover:bg-lifewood-darkGreen hover:text-white transition-colors flex items-center gap-2">
                              <span className="text-lg leading-none">↗</span> Explore more
-                         </button>
+                         </a>
                      </div>
                 </div>
 

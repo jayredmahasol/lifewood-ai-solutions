@@ -17,23 +17,23 @@ const navItems: NavItem[] = [
     label: 'Our Company', 
     href: '#our-company',
     children: [
-      { label: 'About Us', href: '#about-us' }
+      { label: 'About Us', href: '#about' }
     ]
   },
   { 
     label: 'What We Offer', 
     href: '#what-we-offer',
     children: [
-      { label: 'Servicing', href: '#type-a-servicing' },
-      { label: 'LLM Data', href: '#type-b-llm-data' },
-      { label: 'Vertical LLM Data', href: '#type-c-vertical-llm-data' },
-      { label: 'AIGC', href: '#type-d-aigc' }
+      { label: 'Servicing', href: '#type-a' },
+      { label: 'LLM Data', href: '#type-b' },
+      { label: 'Vertical LLM Data', href: '#type-c' },
+      { label: 'AIGC', href: '#type-d' }
     ]
   },
-  { label: 'Philanthropy & Impact', href: '#philanthropy' },
+  { label: 'Philanthropy & Impact', href: '#impact' },
   { label: 'Careers', href: '#careers' },
   { label: 'Contact Us', href: '#contact' },
-  { label: 'Internal News', href: '#internal-news' }
+  { label: 'Internal News', href: '#news' }
 ];
 
 export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => {

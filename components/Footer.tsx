@@ -6,7 +6,7 @@ export const Footer: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
-    <footer id="contact" className="bg-[#111] text-white py-20 px-6 md:px-12 font-sans">
+    <footer id="contact" className="bg-[#046241] text-white py-20 px-6 md:px-12 font-sans">
       <div className="max-w-7xl mx-auto">
         
         {/* Top Section: 5 Columns */}
@@ -21,34 +21,34 @@ export const Footer: React.FC = () => {
               style={{ filter: 'brightness(0) saturate(100%) invert(65%) sepia(54%) saturate(3430%) hue-rotate(352deg) brightness(100%) contrast(94%)' }}
               referrerPolicy="no-referrer"
             />
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <p className="text-sm text-white/70 leading-relaxed">
               Empowering AI with<br/>Human Intelligence.
             </p>
           </div>
 
           {/* Col 2 */}
           <div className="flex flex-col gap-4">
-            <a href="#" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Home</a>
-            <a href="#about" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">About Us</a>
-            <a href="#careers" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Careers</a>
+            <a href="#" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Home</a>
+            <a href="#about" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">About Us</a>
+            <a href="#careers" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Careers</a>
           </div>
 
           {/* Col 3 */}
           <div className="flex flex-col gap-4">
-            <a href="#ai-services" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">AI Services</a>
-            <a href="#ai-projects" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">AI Projects</a>
+            <a href="#ai-services" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">AI Services</a>
+            <a href="#ai-projects" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">AI Projects</a>
           </div>
 
           {/* Col 4 */}
           <div className="flex flex-col gap-4">
-            <a href="#" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Privacy Policy</a>
-            <a href="#" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Cookie Policy</a>
+            <a href="#privacy" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Privacy Policy</a>
+            <a href="#cookie" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Cookie Policy</a>
           </div>
 
           {/* Col 5 */}
           <div className="flex flex-col gap-4">
-            <a href="#" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Terms & Conditions</a>
-            <a href="#contact" className="text-sm text-gray-400 hover:text-[#f59e0b] transition-colors">Contact Us</a>
+            <a href="#terms" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Terms & Conditions</a>
+            <a href="#contact" className="text-sm text-white/70 hover:text-[#FFB347] transition-colors">Contact Us</a>
           </div>
 
         </div>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-[#f59e0b] hover:text-white transition-all"
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-[#FFB347] hover:text-[#133020] transition-all"
                 aria-label={social.label}
               >
                 <social.Icon size={18} />
@@ -78,7 +78,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Copyright */}
-          <p className="text-gray-500 text-sm">
+          <p className="text-white/50 text-sm">
             © {new Date().getFullYear()} Lifewood. All rights reserved.
           </p>
         </div>
@@ -88,11 +88,11 @@ export const Footer: React.FC = () => {
       <div className="fixed bottom-8 right-8 z-50">
         <button 
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="flex items-center gap-3 bg-[#f59e0b] text-[#111] px-5 py-3 rounded-full shadow-2xl hover:bg-[#fbbf24] transition-all hover:scale-105 hover:-translate-y-1 group font-bold border-2 border-[#111]/10"
+          className="flex items-center gap-3 bg-[#FFB347] text-[#133020] px-5 py-3 rounded-full shadow-2xl hover:bg-[#ffc370] transition-all hover:scale-105 hover:-translate-y-1 group font-bold border-2 border-[#133020]/10"
         >
             <div className="relative flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#111] animate-ping absolute opacity-75"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-[#111] relative z-10"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#133020] animate-ping absolute opacity-75"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#133020] relative z-10"></div>
             </div>
             <span className="pr-1 tracking-wide text-sm">Talk to us</span>
         </button>
