@@ -24,10 +24,10 @@ const navItems: NavItem[] = [
     label: 'What We Offer', 
     href: '#what-we-offer',
     children: [
-      { label: 'Servicing', href: '#type-a' },
-      { label: 'LLM Data', href: '#type-b' },
-      { label: 'Vertical LLM Data', href: '#type-c' },
-      { label: 'AIGC', href: '#type-d' }
+      { label: 'Type A-Servicing', href: '#type-a' },
+      { label: 'Type B-LLM Data', href: '#type-b' },
+      { label: 'Type C-Vertical LLM Data', href: '#type-c' },
+      { label: 'Type D-AIGC', href: '#type-d' }
     ]
   },
   { label: 'Philanthropy & Impact', href: '#impact' },
