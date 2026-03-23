@@ -341,6 +341,53 @@ export const CareersPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Quick Actions */}
+      <section className="px-6 pb-20">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6">
+          <SpotlightCard className="rounded-[2rem] bg-white/80 border border-white/90 p-6 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#2F7C6F] font-semibold">Job Alerts</p>
+            <h3 className="text-xl font-semibold text-[#102A24] mt-2">Stay in the loop</h3>
+            <p className="text-sm text-[#102A24]/60 mt-2">Get new roles delivered to your inbox.</p>
+            <div className="mt-4 flex gap-2">
+              <input
+                type="email"
+                placeholder="you@email.com"
+                className="flex-1 px-4 py-2 rounded-xl border border-[#102A24]/10 bg-white focus:border-[#F0A541] focus:ring-0"
+              />
+              <button className="px-4 py-2 rounded-xl bg-[#102A24] text-white font-semibold hover:bg-[#0B1F19] transition">
+                Join
+              </button>
+            </div>
+          </SpotlightCard>
+
+          <SpotlightCard className="rounded-[2rem] bg-white/80 border border-white/90 p-6 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#2F7C6F] font-semibold">Application</p>
+            <h3 className="text-xl font-semibold text-[#102A24] mt-2">Track your status</h3>
+            <p className="text-sm text-[#102A24]/60 mt-2">Check your current application progress anytime.</p>
+            <a
+              href="#application-status"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#2F7C6F]"
+            >
+              View status
+              <ArrowRight size={14} />
+            </a>
+          </SpotlightCard>
+
+          <SpotlightCard className="rounded-[2rem] bg-white/80 border border-white/90 p-6 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#2F7C6F] font-semibold">Referrals</p>
+            <h3 className="text-xl font-semibold text-[#102A24] mt-2">Refer a friend</h3>
+            <p className="text-sm text-[#102A24]/60 mt-2">Help someone great join the team.</p>
+            <a
+              href="#application-form"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#2F7C6F]"
+            >
+              Refer now
+              <ArrowRight size={14} />
+            </a>
+          </SpotlightCard>
+        </div>
+      </section>
+
       {/* Values */}
       <section className="px-6 pb-24">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[0.7fr_1.3fr] gap-10 items-center">

@@ -204,7 +204,7 @@ export const LoginPage: React.FC = () => {
                   label="Email Address or Username" 
                   icon={Mail} 
                   type="text" 
-                  placeholder="name@company.com or admin1" 
+                  placeholder="Email Address" 
                   value={email}
                   onChange={(e: any) => setEmail(e.target.value)}
                   disabled={loading}
