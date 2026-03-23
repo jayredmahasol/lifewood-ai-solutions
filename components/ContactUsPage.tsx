@@ -125,15 +125,16 @@ export const ContactUsPage: React.FC = () => {
     setSubmitError('');
     setSubmitSuccess(false);
 
-    const fullMessage = `Topic: ${formData.topic}\nPreferred contact: ${formData.preferredContact}\nCompany: ${formData.company || 'N/A'}\n\n${formData.message}`;
-
     try {
       const { error } = await supabase.from('feedback_messages').insert([
         {
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
-          message: fullMessage
+          company: formData.company || null,
+          topic: formData.topic,
+          preferred_contact: formData.preferredContact,
+          message: formData.message
         }
       ]);
 
