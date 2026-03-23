@@ -109,11 +109,12 @@ export const AIServicesPage: React.FC = () => {
           </motion.div>
           
           <div className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-[#133020] mb-8 leading-[1.05]">
-            <BlurText text="Intelligent" delay={0} />
-            <br />
-            <span className="text-[#046241]">
-              <BlurText text="Data Solutions." delay={0.2} />
-            </span>
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter mb-8 leading-[1.1] flex flex-wrap justify-center gap-x-4 md:gap-x-6">
+            <BlurText text="Intelligent" delay={0} duration={0.8} className="text-[#133020]" />
+            <BlurText text="" delay={0.1} duration={0.8} className="text-[#133020]" />
+            <BlurText text="" delay={0.2} duration={0.8} className="text-[#046241]" />
+            <BlurText text="Data Solutions." delay={0.1} duration={0.8} className="text-[#046241]" />
+          </h1>
           </div>
 
           <motion.p 

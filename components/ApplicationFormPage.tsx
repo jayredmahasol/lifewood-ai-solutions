@@ -9,6 +9,7 @@ export const ApplicationFormPage: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uniqueId, setUniqueId] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,6 +25,11 @@ export const ApplicationFormPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => {
+      const updated = { ...prev };
+      delete updated[name];
+      return updated;
+    });
   };
 
   const generateUniqueId = () => {
@@ -37,13 +43,62 @@ export const ApplicationFormPage: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
+      const selected = e.target.files[0];
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      const maxSize = 5 * 1024 * 1024;
+
+      if (!allowedTypes.includes(selected.type)) {
+        setErrors(prev => ({ ...prev, resume: 'Please upload a PDF or Word document.' }));
+        setFile(null);
+        setFileName(null);
+        return;
+      }
+      if (selected.size > maxSize) {
+        setErrors(prev => ({ ...prev, resume: 'File size must be 5MB or less.' }));
+        setFile(null);
+        setFileName(null);
+        return;
+      }
+
+      setErrors(prev => {
+        const updated = { ...prev };
+        delete updated.resume;
+        return updated;
+      });
+      setFile(selected);
+      setFileName(selected.name);
     }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const phoneRegex = /^[0-9+()\\-\\.\\s]{7,20}$/;
+    const ageValue = parseInt(formData.age, 10);
+
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required.';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required.';
+    if (!formData.gender) newErrors.gender = 'Please select your gender.';
+    if (!formData.age || Number.isNaN(ageValue)) newErrors.age = 'Age is required.';
+    if (ageValue < 18 || ageValue > 70) newErrors.age = 'Age must be between 18 and 70.';
+    if (!formData.email.trim() || !emailRegex.test(formData.email)) newErrors.email = 'Enter a valid email.';
+    if (!formData.phone.trim() || !phoneRegex.test(formData.phone)) newErrors.phone = 'Enter a valid phone number.';
+    if (!formData.country) newErrors.country = 'Please select your country.';
+    if (!formData.address.trim() || formData.address.trim().length < 6) newErrors.address = 'Please enter your current address.';
+    if (!formData.position) newErrors.position = 'Please select a position.';
+    if (!file) newErrors.resume = 'Please upload your CV or resume.';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setIsSubmitting(true);
     
     const newUniqueId = generateUniqueId();
@@ -207,10 +262,12 @@ export const ApplicationFormPage: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">First Name *</label>
                     <input required name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="John" />
+                    {errors.firstName && <p className="text-xs text-red-600 font-medium">{errors.firstName}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Last Name *</label>
                     <input required name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="Doe" />
+                    {errors.lastName && <p className="text-xs text-red-600 font-medium">{errors.lastName}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Gender *</label>
@@ -221,10 +278,12 @@ export const ApplicationFormPage: React.FC = () => {
                       <option value="Other">Other</option>
                       <option value="Prefer not to say">Prefer not to say</option>
                     </select>
+                    {errors.gender && <p className="text-xs text-red-600 font-medium">{errors.gender}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Age *</label>
                     <input required name="age" value={formData.age} onChange={handleInputChange} type="number" min="18" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="25" />
+                    {errors.age && <p className="text-xs text-red-600 font-medium">{errors.age}</p>}
                   </div>
                 </div>
               </div>
@@ -236,10 +295,12 @@ export const ApplicationFormPage: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Email Address *</label>
                     <input required name="email" value={formData.email} onChange={handleInputChange} type="email" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="john.doe@example.com" />
+                    {errors.email && <p className="text-xs text-red-600 font-medium">{errors.email}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Phone Number *</label>
                     <input required name="phone" value={formData.phone} onChange={handleInputChange} type="tel" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="+1 (555) 000-0000" />
+                    {errors.phone && <p className="text-xs text-red-600 font-medium">{errors.phone}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Country *</label>
@@ -254,10 +315,12 @@ export const ApplicationFormPage: React.FC = () => {
                       <option value="Malaysia">Malaysia</option>
                       <option value="Other">Other</option>
                     </select>
+                    {errors.country && <p className="text-xs text-red-600 font-medium">{errors.country}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-[#133020]">Current Address *</label>
                     <input required name="address" value={formData.address} onChange={handleInputChange} type="text" className="w-full bg-[#F9F7F7] border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all" placeholder="123 Main St, City, State, Zip" />
+                    {errors.address && <p className="text-xs text-red-600 font-medium">{errors.address}</p>}
                   </div>
                 </div>
               </div>
@@ -278,6 +341,7 @@ export const ApplicationFormPage: React.FC = () => {
                       <option value="Quality Assurance Specialist">Quality Assurance Specialist</option>
                       <option value="Internship Program">Internship Program</option>
                     </select>
+                    {errors.position && <p className="text-xs text-red-600 font-medium">{errors.position}</p>}
                   </div>
                   
                   <div className="space-y-2">
@@ -304,6 +368,7 @@ export const ApplicationFormPage: React.FC = () => {
                         )}
                       </div>
                     </div>
+                    {errors.resume && <p className="text-xs text-red-600 font-medium">{errors.resume}</p>}
                   </div>
                 </div>
               </div>
