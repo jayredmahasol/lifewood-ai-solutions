@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, User } from 'lucide-react';
+import { Menu, X, ChevronDown, User, LogIn } from 'lucide-react';
 import { NavItem } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
@@ -84,7 +84,7 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
           <img 
             src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png" 
             alt="Lifewood Logo" 
-            className="h-8 object-contain"
+            className="h-10 object-contain"
             referrerPolicy="no-referrer"
           />
         </a>
@@ -154,9 +154,16 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
           ) : (
             <a 
               href="#login"
-              className="ml-4 px-6 py-2 bg-[#133020] text-white rounded-full text-sm font-medium hover:bg-[#046241] transition-all hover:scale-105 shadow-md"
+              className="ml-4 group relative px-6 py-2.5 rounded-full text-sm font-semibold text-white overflow-hidden shadow-[0_12px_28px_rgba(19,48,32,0.25)] bg-gradient-to-r from-[#0F2A24] to-[#2F7C6F] hover:shadow-[0_16px_32px_rgba(47,124,111,0.35)] transition-all hover:-translate-y-0.5"
             >
-              SIGN IN
+              <span className="absolute inset-0 bg-gradient-to-r from-[#2F7C6F] via-[#0F2A24] to-[#2F7C6F] opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              <span className="relative z-10 flex items-center gap-2">
+                <span className="relative flex items-center justify-center">
+                  <span className="absolute w-2 h-2 rounded-full bg-white/70 animate-ping"></span>
+                  <LogIn size={16} />
+                </span>
+                Sign In
+              </span>
             </a>
           )}
         </div>
@@ -259,9 +266,13 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
                 <a 
                   href="#login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full py-3 bg-[#133020] text-white text-center rounded-full text-sm font-medium hover:bg-[#046241] transition-colors shadow-md"
+                  className="group relative block w-full py-3 rounded-full text-sm font-semibold text-white overflow-hidden bg-gradient-to-r from-[#0F2A24] to-[#2F7C6F] shadow-[0_12px_28px_rgba(19,48,32,0.25)] hover:shadow-[0_16px_32px_rgba(47,124,111,0.35)] transition-all"
                 >
-                  SIGN IN
+                  <span className="absolute inset-0 bg-gradient-to-r from-[#2F7C6F] via-[#0F2A24] to-[#2F7C6F] opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                  <span className="relative z-10 inline-flex items-center justify-center gap-2">
+                    <LogIn size={16} />
+                    Sign In
+                  </span>
                 </a>
               )}
             </div>
