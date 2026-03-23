@@ -6,6 +6,8 @@ export interface BentoCardProps {
   title?: string;
   description?: string;
   label?: string;
+  image?: string;
+  imageAlt?: string;
   textAutoHide?: boolean;
   disableAnimations?: boolean;
 }
@@ -668,6 +670,16 @@ const MagicBento: React.FC<BentoProps> = ({
                   clickEffect={clickEffect}
                   enableMagnetism={enableMagnetism}
                 >
+                  {card.image && (
+                    <div className="absolute inset-0">
+                      <img
+                        src={card.image}
+                        alt={card.imageAlt || card.title || 'Bento visual'}
+                        className="absolute inset-0 w-full h-full object-cover opacity-35"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/10 to-transparent"></div>
+                    </div>
+                  )}
                   <div className="card__header flex justify-between gap-3 relative text-white">
                     <span className="card__label text-base">{card.label}</span>
                   </div>
@@ -800,6 +812,16 @@ const MagicBento: React.FC<BentoProps> = ({
                   el.addEventListener('click', handleClick);
                 }}
               >
+                {card.image && (
+                  <div className="absolute inset-0">
+                    <img
+                      src={card.image}
+                      alt={card.imageAlt || card.title || 'Bento visual'}
+                      className="absolute inset-0 w-full h-full object-cover opacity-35"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/10 to-transparent"></div>
+                  </div>
+                )}
                 <div className="card__header flex justify-between gap-3 relative text-white">
                   <span className="card__label text-base">{card.label}</span>
                 </div>
