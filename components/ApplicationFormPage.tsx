@@ -76,8 +76,8 @@ export const ApplicationFormPage: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-    const phoneRegex = /^[0-9+()\\-\\.\\s]{7,20}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9+()\-\.\s]{7,20}$/;
     const ageValue = parseInt(formData.age, 10);
 
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required.';
@@ -85,8 +85,9 @@ export const ApplicationFormPage: React.FC = () => {
     if (!formData.gender) newErrors.gender = 'Please select your gender.';
     if (!formData.age || Number.isNaN(ageValue)) newErrors.age = 'Age is required.';
     if (ageValue < 18 || ageValue > 70) newErrors.age = 'Age must be between 18 and 70.';
-    if (!formData.email.trim() || !emailRegex.test(formData.email)) newErrors.email = 'Enter a valid email.';
-    if (!formData.phone.trim() || !phoneRegex.test(formData.phone)) newErrors.phone = 'Enter a valid phone number.';
+    const emailValue = formData.email.trim().toLowerCase();
+    if (!emailValue || !emailRegex.test(emailValue)) newErrors.email = 'Enter a valid email.';
+    if (!formData.phone.trim() || !phoneRegex.test(formData.phone.trim())) newErrors.phone = 'Enter a valid phone number.';
     if (!formData.country) newErrors.country = 'Please select your country.';
     if (!formData.address.trim() || formData.address.trim().length < 6) newErrors.address = 'Please enter your current address.';
     if (!formData.position) newErrors.position = 'Please select a position.';
@@ -130,6 +131,22 @@ export const ApplicationFormPage: React.FC = () => {
         }
       }
 
+      const normalizedEmail = formData.email.trim().toLowerCase();
+      const { data: existingApplicants, error: existingError } = await supabase
+        .from('applicants')
+        .select('id')
+        .eq('email', normalizedEmail)
+        .limit(1);
+
+      if (existingError) {
+        console.error('Error checking existing email:', existingError);
+      }
+
+      if (existingApplicants && existingApplicants.length > 0) {
+        setErrors(prev => ({ ...prev, email: 'The email already exist' }));
+        setIsSubmitting(false);
+        return;
+      }
       // Try to insert into Supabase
       const { data: insertData, error } = await supabase
         .from('applicants')
@@ -140,7 +157,7 @@ export const ApplicationFormPage: React.FC = () => {
             last_name: formData.lastName,
             gender: formData.gender,
             age: parseInt(formData.age) || null,
-            email: formData.email,
+            email: normalizedEmail,
             phone_number: formData.phone,
             country: formData.country,
             current_address: formData.address,
@@ -397,3 +414,6 @@ export const ApplicationFormPage: React.FC = () => {
     </div>
   );
 };
+
+
+
