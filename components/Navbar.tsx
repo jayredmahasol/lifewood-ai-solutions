@@ -1,41 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { NavItem } from '../types';
-import GlassSurface from './react-bits/GlassSurface';
 import { supabase } from '../lib/supabaseClient';
 
 const navItems: NavItem[] = [
   { label: 'Home', href: '#' },
-  {
-    label: 'AI Initiatives',
-    href: '#ai',
+  { 
+    label: 'AI Initiatives', 
+    href: '#ai-initiatives',
     children: [
-      { label: 'AI Services', href: '#ai-services' },
       { label: 'AI Projects', href: '#ai-projects' },
+      { label: 'AI Services', href: '#ai-services' }
     ]
   },
-  {
-    label: 'Our Company',
-    href: '#company',
+  { 
+    label: 'Our Company', 
+    href: '#our-company',
     children: [
-      { label: 'About Us', href: '#about' },
-      { label: 'Offices', href: '#offices' },
+      { label: 'About Us', href: '#about-us' }
     ]
   },
-  {
-    label: 'What We Offer',
-    href: '#offer',
+  { 
+    label: 'What We Offer', 
+    href: '#what-we-offer',
     children: [
-      { label: 'Type A- Data Servicing', href: '#type-a' },
-      { label: 'Type B- Horizontal LLM Data', href: '#type-b' },
-      { label: 'Type C- Vertical LLM Data', href: '#type-c' },
-      { label: 'Type D- AIGC', href: '#type-d' },
+      { label: 'Servicing', href: '#type-a-servicing' },
+      { label: 'LLM Data', href: '#type-b-llm-data' },
+      { label: 'Vertical LLM Data', href: '#type-c-vertical-llm-data' },
+      { label: 'AIGC', href: '#type-d-aigc' }
     ]
   },
-  { label: 'Philanthropy & Impact', href: '#impact' },
+  { label: 'Philanthropy & Impact', href: '#philanthropy' },
   { label: 'Careers', href: '#careers' },
   { label: 'Contact Us', href: '#contact' },
-  { label: 'Internal News', href: '#news' },
+  { label: 'Internal News', href: '#internal-news' }
 ];
 
 export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => {
@@ -79,33 +77,20 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${isScrolled ? 'pt-2' : 'pt-6'}`}>
-      <GlassSurface
-        width={isScrolled ? '95%' : '90%'}
-        height={60}
-        borderRadius={isScrolled ? 20 : 32}
-        borderWidth={1}
-        displace={5}
-        distortionScale={-110}
-        redOffset={0}
-        greenOffset={10}
-        blueOffset={20}
-        brightness={85}
-        opacity={1}
-        mixBlendMode="screen"
-      >
+    <nav className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${isScrolled ? 'bg-white/80 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'}`}>
+      <div className="w-full max-w-7xl px-6 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 cursor-pointer">
-          <img
-            src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png"
-            alt="Lifewood"
-            className="h-8 w-auto object-contain pr-36"
+        <a href="#" className="flex items-center gap-3 cursor-pointer">
+          <img 
+            src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png" 
+            alt="Lifewood Logo" 
+            className="h-8 object-contain"
+            referrerPolicy="no-referrer"
           />
         </a>
 
-
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+        <div className="hidden lg:flex items-center gap-6">
           {navItems.map((item) => {
             const active = isActive(item.href) || (item.children && isParentActive(item.children));
             const hasChildren = item.children && item.children.length > 0;
@@ -116,12 +101,12 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
                   <div
                     className={`
                     flex items-center gap-1 text-sm font-medium transition-colors py-2 cursor-default
-                    ${active ? 'text-lifewood-orange' : 'text-black hover:text-lifewood-primaryGreen'}
+                    ${active ? 'text-[#f59e0b]' : 'text-[#133020] hover:text-[#f59e0b]'}
                   `}
                   >
                     {item.label}
                     <ChevronDown
-                      size={14}
+                      size={16}
                       className="group-hover:rotate-180 transition-transform duration-200"
                     />
                   </div>
@@ -130,7 +115,7 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
                     href={item.href}
                     className={`
                     flex items-center gap-1 text-sm font-medium transition-colors py-2
-                    ${active ? 'text-lifewood-orange' : 'text-black hover:text-lifewood-primaryGreen'}
+                    ${active ? 'text-[#f59e0b]' : 'text-[#133020] hover:text-[#f59e0b]'}
                   `}
                   >
                     {item.label}
@@ -139,13 +124,13 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
 
                 {/* Desktop Dropdown */}
                 {item.children && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
-                    <div className="bg-lifewood-white/95 backdrop-blur-xl border border-white/50 rounded-xl p-2 shadow-xl flex flex-col overflow-hidden">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
+                    <div className="bg-white/95 backdrop-blur-xl border border-gray-100 rounded-xl p-2 shadow-xl flex flex-col overflow-hidden">
                       {item.children.map((child) => (
                         <a
                           key={child.label}
                           href={child.href}
-                          className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${currentRoute === child.href ? 'text-lifewood-orange bg-lifewood-beige/50' : 'text-lifewood-darkGreen hover:bg-lifewood-beige/50 hover:text-lifewood-primaryGreen'}`}
+                          className={`block px-4 py-2 text-sm font-medium rounded-lg transition-colors ${currentRoute === child.href ? 'text-[#f59e0b] bg-gray-50' : 'text-[#133020] hover:bg-gray-50 hover:text-[#f59e0b]'}`}
                         >
                           {child.label}
                         </a>
@@ -161,7 +146,7 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
           {user ? (
             <a 
               href="#profile"
-              className="ml-4 px-5 py-2 bg-[#133020] text-white rounded-full text-sm font-bold hover:bg-[#046241] transition-all hover:scale-105 shadow-lg flex items-center gap-2"
+              className="ml-4 px-6 py-2 bg-[#133020] text-white rounded-full text-sm font-medium hover:bg-[#046241] transition-all hover:scale-105 shadow-md flex items-center gap-2"
             >
               <User size={16} />
               {fullName}
@@ -169,90 +154,120 @@ export const Navbar: React.FC<{ currentRoute: string }> = ({ currentRoute }) => 
           ) : (
             <a 
               href="#login"
-              className="ml-4 px-5 py-2 bg-[#133020] text-white rounded-full text-sm font-bold hover:bg-[#046241] transition-all hover:scale-105 shadow-lg"
+              className="ml-4 px-6 py-2 bg-[#133020] text-white rounded-full text-sm font-medium hover:bg-[#046241] transition-all hover:scale-105 shadow-md"
             >
-              Sign In
+              SIGN IN
             </a>
           )}
         </div>
 
         {/* Mobile Toggle */}
         <button
-          className="lg:hidden text-lifewood-darkGreen"
+          className="lg:hidden text-[#133020]"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Mobile Menu Dropdown */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 mt-4 p-6 bg-lifewood-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/50 flex flex-col gap-2 lg:hidden max-h-[80vh] overflow-y-auto">
-            {navItems.map((item) => (
-              <div key={item.label} className="border-b border-gray-100 last:border-0">
-                <div
-                  className="flex items-center justify-between py-3 cursor-pointer"
-                  onClick={() => item.children ? toggleMobileExpand(item.label) : setMobileMenuOpen(false)}
-                >
-                  <a
-                    href={item.children ? '#' : item.href}
-                    className={`text-lg font-medium text-lifewood-darkGreen ${item.children ? 'pointer-events-none' : ''}`}
-                    onClick={(e) => { if (item.children) e.preventDefault(); else setMobileMenuOpen(false); }}
+        {/* Mobile/Desktop Side Drawer */}
+        <div 
+          className={`
+            fixed inset-0 z-[60] transition-all duration-300
+            ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
+          `}
+        >
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          ></div>
+          
+          {/* Drawer */}
+          <div 
+            className={`
+              absolute top-0 right-0 bottom-0 w-full max-w-sm bg-white border-l border-gray-100 shadow-2xl flex flex-col transition-transform duration-300
+              ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+            `}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="https://framerusercontent.com/images/BZSiFYgRc4wDUAuEybhJbZsIBQY.png" 
+                  alt="Lifewood Logo" 
+                  className="h-6 object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <button 
+                className="text-gray-500 hover:text-gray-900 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-2">
+              {navItems.map((item) => (
+                <div key={item.label} className="border-b border-gray-100 last:border-0">
+                  <div
+                    className="flex items-center justify-between py-4 cursor-pointer group"
+                    onClick={() => item.children ? toggleMobileExpand(item.label) : setMobileMenuOpen(false)}
                   >
-                    {item.label}
-                  </a>
-                  {item.children && (
-                    <ChevronDown
-                      size={20}
-                      className={`text-lifewood-darkGreen transition-transform duration-300 ${mobileExpanded === item.label ? 'rotate-180' : ''}`}
-                    />
-                  )}
-                </div>
-
-                {/* Mobile Submenu */}
-                {item.children && (
-                  <div className={`overflow-hidden transition-all duration-300 ${mobileExpanded === item.label ? 'max-h-96 pb-3 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="flex flex-col gap-2 pl-4 border-l-2 border-lifewood-orange/30 ml-2">
+                    <a
+                      href={item.children ? '#' : item.href}
+                      className={`text-sm font-medium transition-colors ${item.children ? 'pointer-events-none text-[#133020]' : 'text-gray-600 group-hover:text-[#f59e0b]'}`}
+                      onClick={(e) => { if (item.children) e.preventDefault(); else setMobileMenuOpen(false); }}
+                    >
+                      {item.label}
+                    </a>
+                    {item.children && (
+                      <ChevronDown
+                        size={16}
+                        className={`text-gray-400 group-hover:text-[#f59e0b] transition-all duration-200 ${mobileExpanded === item.label ? 'rotate-180' : ''}`}
+                      />
+                    )}
+                  </div>
+                  {item.children && mobileExpanded === item.label && (
+                    <div className="flex flex-col gap-2 pb-4 pl-4">
                       {item.children.map((child) => (
                         <a
                           key={child.label}
                           href={child.href}
-                          className="text-base text-lifewood-darkGreen/80 hover:text-lifewood-primaryGreen py-1"
+                          className="text-sm font-medium text-gray-500 hover:text-[#f59e0b] py-2 transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {child.label}
                         </a>
                       ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
+            </div>
             
-            {/* Mobile Sign In Button */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="p-6 border-t border-gray-100 bg-gray-50">
               {user ? (
                 <a 
                   href="#profile"
-                  className="block w-full text-center px-5 py-3 bg-[#133020] text-white rounded-xl text-lg font-bold hover:bg-[#046241] transition-all flex items-center justify-center gap-2"
                   onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-[#133020] text-white rounded-full text-sm font-medium hover:bg-[#046241] transition-colors shadow-md"
                 >
-                  <User size={20} />
+                  <User size={16} />
                   {fullName}
                 </a>
               ) : (
                 <a 
                   href="#login"
-                  className="block w-full text-center px-5 py-3 bg-[#133020] text-white rounded-xl text-lg font-bold hover:bg-[#046241] transition-all"
                   onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full py-3 bg-[#133020] text-white text-center rounded-full text-sm font-medium hover:bg-[#046241] transition-colors shadow-md"
                 >
-                  Sign In
+                  SIGN IN
                 </a>
               )}
             </div>
           </div>
-        )}
-
-      </GlassSurface>
+        </div>
+      </div>
     </nav>
   );
 };

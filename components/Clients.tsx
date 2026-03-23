@@ -12,26 +12,24 @@ const clientLogos = [
 
 export const Clients: React.FC = () => {
   return (
-    <section className="py-24 bg-lifewood-white overflow-hidden">
+    <section className="py-32 bg-white overflow-hidden border-t border-[#133020]/5">
       <div className="max-w-7xl mx-auto px-6 text-center">
-        <motion.h2 
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-4xl md:text-5xl font-light text-lifewood-darkGreen mb-8 tracking-tight"
+          className="mb-16"
         >
-          Our Clients And Partners
-        </motion.h2>
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-3xl mx-auto text-lg text-gray-600 mb-16 leading-relaxed font-normal"
-        >
-          We are proud to partner and work with leading organizations worldwide in transforming data into meaningful solutions. Lifewood's commitment to innovation and excellence has earned the trust of global brands across industries.
-        </motion.p>
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#f5eedb] text-[#133020] text-sm font-semibold tracking-wider uppercase mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#046241]"></span>
+            Trusted By
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#133020] mb-6">Global Leaders</h2>
+          <p className="max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
+            We are proud to partner and work with leading organizations worldwide in transforming data into meaningful solutions.
+          </p>
+        </motion.div>
 
         {/* Marquee Container */}
         <div className="relative w-full overflow-hidden mask-gradient-x">
@@ -41,12 +39,12 @@ export const Clients: React.FC = () => {
              transition={{ 
                repeat: Infinity, 
                ease: "linear", 
-               duration: 20 
+               duration: 30 
              }}
            >
              {/* Duplicate logos to create seamless loop */}
              {[...clientLogos, ...clientLogos].map((logo, index) => (
-               <div key={index} className="flex-shrink-0 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+               <div key={index} className="flex-shrink-0 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500 hover:scale-110">
                  <img 
                    src={logo} 
                    alt={`Client Partner ${index + 1}`} 
