@@ -159,7 +159,6 @@ const StatCard = ({ label, value, subtext }: any) => (
 export const DashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>(null);
-  const [applicant, setApplicant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
@@ -229,17 +228,6 @@ export const DashboardPage: React.FC = () => {
           .select('*')
           .eq('id', user.id)
           .single();
-
-        // Fetch applicant data
-        const { data: applicantData } = await supabase
-          .from('applicants')
-          .select('*')
-          .eq('email', user.email)
-          .single();
-
-        if (applicantData) {
-          setApplicant(applicantData);
-        }
 
         if (profile) {
           if (profile.website === 'suspended') {
@@ -336,23 +324,6 @@ export const DashboardPage: React.FC = () => {
         .eq('id', user.id);
 
       if (profileError) throw profileError;
-
-      // Update applicant table if exists
-      if (applicant) {
-        const { error: applicantError } = await supabase
-          .from('applicants')
-          .update({
-            first_name: firstName,
-            last_name: lastName,
-            contact_number: contactNumber,
-            school: school,
-            designation: designation,
-            present_address: presentAddress
-          })
-          .eq('id', applicant.id);
-        
-        if (applicantError) throw applicantError;
-      }
 
       setUser(data.user);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -516,7 +487,7 @@ export const DashboardPage: React.FC = () => {
             >
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-[#133020] group-hover:text-[#046241] transition-colors">{fullName}</p>
-                <p className="text-[10px] font-bold text-[#133020]/40 uppercase tracking-wider">{applicant?.position_applied || 'Data Specialist'}</p>
+                <p className="text-[10px] font-bold text-[#133020]/40 uppercase tracking-wider">{designation || 'Data Specialist'}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-[#f5eedb] border-2 border-white shadow-sm flex items-center justify-center text-[#133020] font-bold text-sm overflow-hidden group-hover:border-[#046241]/20 transition-colors">
                 {avatarUrl ? (
@@ -820,7 +791,7 @@ export const DashboardPage: React.FC = () => {
                       </div>
                       <h1 className="text-4xl md:text-5xl font-bold leading-tight text-[#133020] mb-2">
                         Welcome back, <br/>
-                        <span className="text-[#046241]">{applicant?.first_name || fullName.split(' ')[0]}</span>
+                        <span className="text-[#046241]">{fullName.split(' ')[0]}</span>
                       </h1>
                       <p className="text-[#133020]/60 font-medium text-lg max-w-md">
                         You have 4 active tasks pending review. Your overall accuracy rate is up by 2.4% this week.

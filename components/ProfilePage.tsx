@@ -26,7 +26,6 @@ const MOCK_WORKSTREAMS: Workstream[] = [
 export const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
-  const [applicant, setApplicant] = useState<any>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -39,16 +38,6 @@ export const ProfilePage = () => {
             .select('*')
             .eq('id', user.id)
             .single();
-          
-          const { data: applicantData } = await supabase
-            .from('applicants')
-            .select('*')
-            .eq('email', user.email)
-            .single();
-
-          if (applicantData) {
-            setApplicant(applicantData);
-          }
 
           if (!error && data) {
             setProfile(data);
@@ -157,9 +146,9 @@ export const ProfilePage = () => {
             )}
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-[#133020] mb-2">{applicant?.first_name || profile?.first_name} {applicant?.last_name || profile?.last_name}</h2>
+            <h2 className="text-3xl font-bold text-[#133020] mb-2">{profile?.first_name} {profile?.last_name}</h2>
             <p className="text-[#133020]/60 font-bold flex items-center gap-2">
-              <Briefcase size={18} /> {applicant?.position_applied || 'Data Specialist'}
+              <Briefcase size={18} /> {profile?.designation || profile?.position_applied || 'Data Specialist'}
             </p>
           </div>
         </div>
