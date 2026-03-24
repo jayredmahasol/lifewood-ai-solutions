@@ -1,15 +1,37 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
-import { 
-  Users, Search, Filter, MoreVertical, ShieldCheck, 
-  User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2, BarChart2, PieChart as PieChartIcon, Bell
+import {
+  Users,
+  Search,
+  Filter,
+  MoreVertical,
+  ShieldCheck,
+  User,
+  Mail,
+  MapPin,
+  Briefcase,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Save,
+  Loader2,
+  BarChart2,
+  PieChart as PieChartIcon,
+  Bell,
+  CheckCircle2,
+  XCircle,
+  UserRound,
+  ListChecks
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AdminSidebar from './AdminSidebar';
 
 export const AdminDashboardPage = () => {
   const [users, setUsers] = useState<any[]>([]);
+  const [applicants, setApplicants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,19 +52,36 @@ export const AdminDashboardPage = () => {
     }
 
     const fetchUsers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('updated_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('updated_at', { ascending: false });
 
-        if (error) {
-          // If table doesn't exist or error, just set empty array
-          console.error('Error fetching users:', error);
-          setUsers([]);
-        } else {
-          setUsers(data || []);
-        }
+      if (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
+      return data || [];
+    };
+
+    const fetchApplicants = async () => {
+      const { data, error } = await supabase
+        .from('applicants')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching applicants:', error);
+        return [];
+      }
+      return data || [];
+    };
+
+    const fetchAll = async () => {
+      try {
+        const [usersData, applicantsData] = await Promise.all([fetchUsers(), fetchApplicants()]);
+        setUsers(usersData);
+        setApplicants(applicantsData);
       } catch (err) {
         console.error('Unexpected error:', err);
       } finally {
@@ -50,7 +89,7 @@ export const AdminDashboardPage = () => {
       }
     };
 
-    fetchUsers();
+    fetchAll();
   }, []);
 
   const handleLogout = () => {
@@ -94,7 +133,6 @@ export const AdminDashboardPage = () => {
 
       if (error) throw error;
 
-      // Update local state
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, ...editFormData } : u));
       handleModalClose();
     } catch (err) {
@@ -107,10 +145,10 @@ export const AdminDashboardPage = () => {
 
   const handleSuspendUser = async () => {
     if (!selectedUser) return;
-    
+
     const isCurrentlySuspended = selectedUser.website === 'suspended';
     const newWebsiteValue = isCurrentlySuspended ? null : 'suspended';
-    
+
     if (!confirm(`Are you sure you want to ${isCurrentlySuspended ? 'unsuspend' : 'suspend'} this user?`)) {
       return;
     }
@@ -127,7 +165,6 @@ export const AdminDashboardPage = () => {
 
       if (error) throw error;
 
-      // Update local state
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, website: newWebsiteValue } : u));
       setSelectedUser((prev: any) => ({ ...prev, website: newWebsiteValue }));
     } catch (err) {
@@ -139,7 +176,7 @@ export const AdminDashboardPage = () => {
   };
 
   // Filter users based on search
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     (user.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     (user.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -153,6 +190,22 @@ export const AdminDashboardPage = () => {
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
+  const activeApplicants = useMemo(() => applicants.filter(a => !a.deleted_at), [applicants]);
+
+  const applicantsStats = useMemo(() => {
+    const total = activeApplicants.length;
+    const hired = activeApplicants.filter(a => a.status === 'Hired').length;
+    const rejected = activeApplicants.filter(a => a.status === 'Failed').length;
+    const pending = total - hired - rejected;
+    return { total, hired, rejected, pending };
+  }, [activeApplicants]);
+
+  const recentApplicants = useMemo(() => {
+    return [...activeApplicants]
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 6);
+  }, [activeApplicants]);
+
   // Analytics Data
   const schoolData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -163,7 +216,7 @@ export const AdminDashboardPage = () => {
     return Object.entries(counts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5); // Top 5 schools
+      .slice(0, 5);
   }, [users]);
 
   const designationData = useMemo(() => {
@@ -177,7 +230,7 @@ export const AdminDashboardPage = () => {
       .sort((a, b) => b.value - a.value);
   }, [users]);
 
-  const COLORS = ['#046241', '#FFB347', '#133020', '#ccff00', '#8E9299'];
+  const COLORS = ['#046241', '#FFB347', '#133020', '#7DB59A', '#8E9299'];
 
   if (loading) {
     return (
@@ -193,13 +246,13 @@ export const AdminDashboardPage = () => {
 
       {/* Main Content */}
       <main className="flex-1 relative h-screen overflow-hidden flex flex-col bg-[#F9F7F7] text-[#133020] ml-64">
-        
+
         {/* Top Header */}
         <header className="h-20 px-8 border-b border-[#133020]/5 bg-white flex items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-[#133020]">Users</h1>
+            <h1 className="text-xl font-bold text-[#133020]">Admin Dashboard</h1>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <button className="relative p-2 text-[#133020]/60 hover:text-[#133020] transition-colors rounded-full hover:bg-[#133020]/5">
               <Bell size={20} />
@@ -220,303 +273,459 @@ export const AdminDashboardPage = () => {
 
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-          <div className="max-w-7xl mx-auto w-full">
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
-          >
-            <div className="w-16 h-16 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
-              <Users size={32} />
-            </div>
-            <div>
-              <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Total Users</p>
-              <h3 className="text-4xl font-bold text-[#133020]">{users.length}</h3>
-            </div>
-          </motion.div>
+          <div className="max-w-7xl mx-auto w-full space-y-10">
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
-          >
-            <div className="w-16 h-16 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
-              <Briefcase size={32} />
-            </div>
-            <div>
-              <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Active Schools</p>
-              <h3 className="text-4xl font-bold text-[#133020]">
-                {new Set(users.map(u => u.school).filter(Boolean)).size}
-              </h3>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-[#133020] rounded-[2rem] p-6 shadow-xl flex items-center gap-6 text-white relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB347] rounded-full blur-[50px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
-            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-[#FFB347] relative z-10">
-              <Clock size={32} />
-            </div>
-            <div className="relative z-10">
-              <p className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">Recent Updates</p>
-              <h3 className="text-4xl font-bold text-white">
-                {users.filter(u => new Date(u.updated_at || Date.now()) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
-              </h3>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Bar Chart: Users by School */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
-                <BarChart2 size={20} />
-              </div>
-              <h3 className="text-lg font-bold text-[#133020]">Top Schools</h3>
-            </div>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={schoolData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#13302010" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#13302080' }} 
-                    tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 12, fill: '#13302080' }} 
-                    allowDecimals={false}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: '#13302005' }}
-                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
-                  />
-                  <Bar dataKey="count" fill="#046241" radius={[4, 4, 0, 0]} barSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Pie Chart: Users by Designation */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
-                <PieChartIcon size={20} />
-              </div>
-              <h3 className="text-lg font-bold text-[#133020]">Designations</h3>
-            </div>
-            <div className="h-[300px] w-full flex items-center justify-center">
-              {designationData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={designationData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={80}
-                      outerRadius={110}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {designationData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="text-[#133020]/40 text-sm">No data available</div>
-              )}
-            </div>
-            {/* Custom Legend */}
-            <div className="flex flex-wrap justify-center gap-4 mt-2">
-              {designationData.slice(0, 5).map((entry, index) => (
-                <div key={index} className="flex items-center gap-2 text-xs text-[#133020]/70">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                  <span>{entry.name} ({entry.value})</span>
+            {/* Applicants Section */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#133020]">Applicants Overview</h2>
+                  <p className="text-[#133020]/60">Real-time status of incoming applications.</p>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Users Table Section */}
-        <div className="bg-white rounded-[2rem] shadow-sm border border-[#133020]/5 overflow-hidden">
-          {/* Table Header / Controls */}
-          <div className="p-6 border-b border-[#133020]/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-[#133020]">Registered Users</h2>
-            
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/40" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search users..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-[#f5eedb]/50 border border-[#133020]/10 rounded-full py-2 pl-12 pr-4 outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all w-64 text-sm"
-                />
+                <div className="flex items-center gap-2 text-sm text-[#133020]/50">
+                  <ListChecks size={16} className="text-[#046241]" />
+                  Updated just now
+                </div>
               </div>
-              <button className="p-2.5 rounded-full border border-[#133020]/10 text-[#133020]/60 hover:bg-[#f5eedb] hover:text-[#133020] transition-colors">
-                <Filter size={18} />
-              </button>
-            </div>
-          </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#f5eedb]/30 text-[#133020]/60 text-xs uppercase tracking-wider border-b border-[#133020]/5">
-                  <th className="p-4 pl-6 font-bold">User</th>
-                  <th className="p-4 font-bold">Contact</th>
-                  <th className="p-4 font-bold">School / Designation</th>
-                  <th className="p-4 font-bold">Location</th>
-                  <th className="p-4 font-bold text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.length > 0 ? (
-                  currentUsers.map((user, index) => (
-                    <motion.tr 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      key={user.id || index} 
-                      onClick={() => handleRowClick(user)}
-                      className="border-b border-[#133020]/5 hover:bg-[#f5eedb]/20 transition-colors cursor-pointer"
-                    >
-                      <td className="p-4 pl-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#133020]/5 flex items-center justify-center overflow-hidden border border-[#133020]/10">
-                            {user.avatar_url ? (
-                              <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-[#133020] font-bold text-sm">
-                                {(user.first_name?.[0] || user.full_name?.[0] || '?').toUpperCase()}
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-bold text-[#133020] text-sm">
-                                {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || 'Unknown User'}
-                              </p>
-                              {user.website === 'suspended' && (
-                                <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Suspended</span>
-                              )}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-[1.75rem] p-6 border border-[#133020]/5 shadow-sm"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                      <UserRound size={22} />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#133020]/50 font-bold">Total Applicants</p>
+                      <p className="text-3xl font-bold text-[#133020]">{applicantsStats.total}</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="bg-white rounded-[1.75rem] p-6 border border-[#133020]/5 shadow-sm"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+                      <CheckCircle2 size={22} />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#133020]/50 font-bold">Hired</p>
+                      <p className="text-3xl font-bold text-[#133020]">{applicantsStats.hired}</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-white rounded-[1.75rem] p-6 border border-[#133020]/5 shadow-sm"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                      <XCircle size={22} />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-[#133020]/50 font-bold">Rejected</p>
+                      <p className="text-3xl font-bold text-[#133020]">{applicantsStats.rejected}</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="bg-[#133020] rounded-[1.75rem] p-6 border border-[#133020]/5 shadow-xl text-white relative overflow-hidden"
+                >
+                  <div className="absolute -right-6 -top-6 w-20 h-20 bg-[#FFB347] rounded-full blur-[30px] opacity-40"></div>
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[#FFB347]">
+                      <Clock size={22} />
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-white/60 font-bold">Pending</p>
+                      <p className="text-3xl font-bold text-white">{applicantsStats.pending}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-[2rem] p-6 border border-[#133020]/5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-[#133020]">Recent Applicants</h3>
+                    <span className="text-xs text-[#133020]/50">Latest 6</span>
+                  </div>
+                  <div className="space-y-3">
+                    {recentApplicants.length > 0 ? (
+                      recentApplicants.map(applicant => (
+                        <div key={applicant.id} className="flex items-center justify-between p-3 rounded-xl border border-[#133020]/5 hover:bg-[#F9F7F7] transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[#046241]/10 text-[#046241] font-bold flex items-center justify-center">
+                              {applicant.first_name?.[0]}{applicant.last_name?.[0]}
                             </div>
-                            <p className="text-xs text-[#133020]/50">{user.email}</p>
+                            <div>
+                              <p className="text-sm font-semibold text-[#133020]">{applicant.first_name} {applicant.last_name}</p>
+                              <p className="text-xs text-[#133020]/50">{applicant.position_applied || 'Position not set'}</p>
+                            </div>
                           </div>
+                          <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                            applicant.status === 'Hired'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : applicant.status === 'Failed'
+                                ? 'bg-red-50 text-red-700 border-red-200'
+                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                            {applicant.status || 'Pending Review'}
+                          </span>
                         </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2 text-xs text-[#133020]/70">
-                            <Mail size={12} className="text-[#046241]" />
-                            {user.email || 'N/A'}
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-[#133020]/70">
-                            <Phone size={12} className="text-[#046241]" />
-                            {user.contact_number || 'N/A'}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <p className="text-sm font-medium text-[#133020]">{user.school || 'N/A'}</p>
-                        <p className="text-xs text-[#133020]/50">{user.designation || 'Intern'}</p>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2 text-sm text-[#133020]/70">
-                          <MapPin size={14} className="text-[#FFB347]" />
-                          <span className="truncate max-w-[150px]">{user.present_address || 'N/A'}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <button className="p-2 text-[#133020]/40 hover:text-[#046241] hover:bg-[#046241]/10 rounded-lg transition-colors">
-                          <MoreVertical size={18} />
-                        </button>
-                      </td>
-                    </motion.tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-[#133020]/50">
-                      No users found matching your search.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="p-4 border-t border-[#133020]/5 flex items-center justify-between bg-[#f5eedb]/10">
-              <p className="text-xs text-[#133020]/50 font-medium">
-                Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} entries
-              </p>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-[#133020]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === i + 1 
-                          ? 'bg-[#046241] text-white' 
-                          : 'text-[#133020]/60 hover:bg-[#133020]/5'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                      ))
+                    ) : (
+                      <div className="text-sm text-[#133020]/50">No applicants yet.</div>
+                    )}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-[#133020]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight size={16} />
-                </button>
+
+                <div className="bg-white rounded-[2rem] p-6 border border-[#133020]/5 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
+                      <Briefcase size={20} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#133020]">Applicants by Position</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {Object.entries(
+                      activeApplicants.reduce((acc: Record<string, number>, a: any) => {
+                        const key = a.position_applied || 'Unknown';
+                        acc[key] = (acc[key] || 0) + 1;
+                        return acc;
+                      }, {})
+                    )
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5)
+                      .map(([position, count]) => (
+                        <div key={position} className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-[#133020] font-medium truncate max-w-[70%]">{position}</span>
+                            <span className="text-[#133020]/60">{count}</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-[#F9F7F7] overflow-hidden">
+                            <div
+                              className="h-full bg-[#046241]"
+                              style={{ width: `${(count / Math.max(applicantsStats.total, 1)) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            </section>
+
+            {/* Users Section */}
+            <section className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-[#133020]">Users Overview</h2>
+                <p className="text-[#133020]/60">Registered profiles and activity.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
+                >
+                  <div className="w-16 h-16 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                    <Users size={32} />
+                  </div>
+                  <div>
+                    <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Total Users</p>
+                    <h3 className="text-4xl font-bold text-[#133020]">{users.length}</h3>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
+                >
+                  <div className="w-16 h-16 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
+                    <Briefcase size={32} />
+                  </div>
+                  <div>
+                    <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Active Schools</p>
+                    <h3 className="text-4xl font-bold text-[#133020]">
+                      {new Set(users.map(u => u.school).filter(Boolean)).size}
+                    </h3>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-[#133020] rounded-[2rem] p-6 shadow-xl flex items-center gap-6 text-white relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB347] rounded-full blur-[50px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+                  <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-[#FFB347] relative z-10">
+                    <Clock size={32} />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">Recent Updates</p>
+                    <h3 className="text-4xl font-bold text-white">
+                      {users.filter(u => new Date(u.updated_at || Date.now()) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                    </h3>
+                  </div>
+                </motion.div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                      <BarChart2 size={20} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#133020]">Top Schools</h3>
+                  </div>
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={schoolData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#13302010" />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#13302080' }}
+                          tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#13302080' }}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
+                          cursor={{ fill: '#13302005' }}
+                          contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                        />
+                        <Bar dataKey="count" fill="#046241" radius={[4, 4, 0, 0]} barSize={40} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
+                      <PieChartIcon size={20} />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#133020]">Designations</h3>
+                  </div>
+                  <div className="h-[300px] w-full flex items-center justify-center">
+                    {designationData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={designationData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={80}
+                            outerRadius={110}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            {designationData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="text-[#133020]/40 text-sm">No data available</div>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-4 mt-2">
+                    {designationData.slice(0, 5).map((entry, index) => (
+                      <div key={index} className="flex items-center gap-2 text-xs text-[#133020]/70">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <span>{entry.name} ({entry.value})</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Users Table Section */}
+              <div className="bg-white rounded-[2rem] shadow-sm border border-[#133020]/5 overflow-hidden">
+                <div className="p-6 border-b border-[#133020]/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <h2 className="text-xl font-bold text-[#133020]">Registered Users</h2>
+
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#133020]/40" size={18} />
+                      <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-[#f5eedb]/50 border border-[#133020]/10 rounded-full py-2 pl-12 pr-4 outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all w-64 text-sm"
+                      />
+                    </div>
+                    <button className="p-2.5 rounded-full border border-[#133020]/10 text-[#133020]/60 hover:bg-[#f5eedb] hover:text-[#133020] transition-colors">
+                      <Filter size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-[#f5eedb]/30 text-[#133020]/60 text-xs uppercase tracking-wider border-b border-[#133020]/5">
+                        <th className="p-4 pl-6 font-bold">User</th>
+                        <th className="p-4 font-bold">Contact</th>
+                        <th className="p-4 font-bold">School / Designation</th>
+                        <th className="p-4 font-bold">Location</th>
+                        <th className="p-4 font-bold text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentUsers.length > 0 ? (
+                        currentUsers.map((user, index) => (
+                          <motion.tr
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            key={user.id || index}
+                            onClick={() => handleRowClick(user)}
+                            className="border-b border-[#133020]/5 hover:bg-[#f5eedb]/20 transition-colors cursor-pointer"
+                          >
+                            <td className="p-4 pl-6">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-[#133020]/5 flex items-center justify-center overflow-hidden border border-[#133020]/10">
+                                  {user.avatar_url ? (
+                                    <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="text-[#133020] font-bold text-sm">
+                                      {(user.first_name?.[0] || user.full_name?.[0] || '?').toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-bold text-[#133020] text-sm">
+                                      {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || 'Unknown User'}
+                                    </p>
+                                    {user.website === 'suspended' && (
+                                      <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Suspended</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#133020]/50">{user.email}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2 text-xs text-[#133020]/70">
+                                  <Mail size={12} className="text-[#046241]" />
+                                  {user.email || 'N/A'}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-[#133020]/70">
+                                  <Phone size={12} className="text-[#046241]" />
+                                  {user.contact_number || 'N/A'}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <p className="text-sm font-medium text-[#133020]">{user.school || 'N/A'}</p>
+                              <p className="text-xs text-[#133020]/50">{user.designation || 'Intern'}</p>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center gap-2 text-sm text-[#133020]/70">
+                                <MapPin size={14} className="text-[#FFB347]" />
+                                <span className="truncate max-w-[150px]">{user.present_address || 'N/A'}</span>
+                              </div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <button className="p-2 text-[#133020]/40 hover:text-[#046241] hover:bg-[#046241]/10 rounded-lg transition-colors">
+                                <MoreVertical size={18} />
+                              </button>
+                            </td>
+                          </motion.tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-[#133020]/50">
+                            No users found matching your search.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="p-4 border-t border-[#133020]/5 flex items-center justify-between bg-[#f5eedb]/10">
+                    <p className="text-xs text-[#133020]/50 font-medium">
+                      Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} entries
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="p-1.5 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-[#133020]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === i + 1
+                                ? 'bg-[#046241] text-white'
+                                : 'text-[#133020]/60 hover:bg-[#133020]/5'
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="p-1.5 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-[#133020]/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </main>
@@ -525,20 +734,19 @@ export const AdminDashboardPage = () => {
       <AnimatePresence>
         {isModalOpen && selectedUser && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleModalClose}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             >
-              {/* Modal Header */}
               <div className="bg-[#133020] p-6 text-white flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
@@ -558,7 +766,7 @@ export const AdminDashboardPage = () => {
                     <p className="text-white/60 text-sm">ID: {selectedUser.id}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={handleModalClose}
                   className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                 >
@@ -566,28 +774,26 @@ export const AdminDashboardPage = () => {
                 </button>
               </div>
 
-              {/* Modal Body */}
               <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Basic Info */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-[#133020]/50 border-b border-[#133020]/10 pb-2">Basic Information</h3>
-                    
+
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">First Name</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="first_name"
                         value={editFormData.first_name || ''}
                         onChange={handleInputChange}
                         className="w-full bg-[#f5eedb]/30 border border-[#133020]/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-[#046241]"
                       />
                     </div>
-                    
+
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Last Name</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="last_name"
                         value={editFormData.last_name || ''}
                         onChange={handleInputChange}
@@ -597,8 +803,8 @@ export const AdminDashboardPage = () => {
 
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Email Address</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         name="email"
                         value={editFormData.email || ''}
                         onChange={handleInputChange}
@@ -608,8 +814,8 @@ export const AdminDashboardPage = () => {
 
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Contact Number</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="contact_number"
                         value={editFormData.contact_number || ''}
                         onChange={handleInputChange}
@@ -618,14 +824,13 @@ export const AdminDashboardPage = () => {
                     </div>
                   </div>
 
-                  {/* Academic & Status */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-[#133020]/50 border-b border-[#133020]/10 pb-2">Academic & Status</h3>
-                    
+
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">School</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="school"
                         value={editFormData.school || ''}
                         onChange={handleInputChange}
@@ -635,8 +840,8 @@ export const AdminDashboardPage = () => {
 
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Designation</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="designation"
                         value={editFormData.designation || ''}
                         onChange={handleInputChange}
@@ -646,8 +851,8 @@ export const AdminDashboardPage = () => {
 
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Present Address</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="present_address"
                         value={editFormData.present_address || ''}
                         onChange={handleInputChange}
@@ -657,7 +862,7 @@ export const AdminDashboardPage = () => {
 
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-[#133020]/70">Civil Status</label>
-                      <select 
+                      <select
                         name="status"
                         value={editFormData.status || ''}
                         onChange={handleInputChange}
@@ -673,9 +878,8 @@ export const AdminDashboardPage = () => {
                 </div>
               </div>
 
-              {/* Modal Footer */}
               <div className="p-6 border-t border-[#133020]/10 bg-[#f5eedb]/30 flex justify-between gap-3 shrink-0">
-                <button 
+                <button
                   onClick={handleSuspendUser}
                   disabled={saving}
                   className={`px-6 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 disabled:opacity-70 ${selectedUser.website === 'suspended' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
@@ -684,13 +888,13 @@ export const AdminDashboardPage = () => {
                   {selectedUser.website === 'suspended' ? 'Unsuspend User' : 'Suspend User'}
                 </button>
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={handleModalClose}
                     className="px-6 py-2.5 rounded-xl text-[#133020] font-bold hover:bg-[#133020]/5 transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     onClick={handleSaveUser}
                     disabled={saving}
                     className="px-6 py-2.5 rounded-xl bg-[#046241] text-white font-bold hover:bg-[#035436] transition-colors flex items-center gap-2 disabled:opacity-70"
@@ -708,7 +912,6 @@ export const AdminDashboardPage = () => {
   );
 };
 
-// Simple Phone icon since it wasn't imported from lucide-react in the main block
 const Phone = ({ size = 24, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
