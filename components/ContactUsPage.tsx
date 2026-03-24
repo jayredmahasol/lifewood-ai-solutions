@@ -119,6 +119,20 @@ export const ContactUsPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
+  const capitalizeFirst = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return value;
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  };
+
+  const capitalizeWords = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return value;
+    return trimmed
+      .toLowerCase()
+      .replace(/(^|[\s-])([a-z])/g, (_, p1: string, p2: string) => `${p1}${p2.toUpperCase()}`);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -128,13 +142,13 @@ export const ContactUsPage: React.FC = () => {
     try {
       const { error } = await supabase.from('feedback_messages').insert([
         {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          company: formData.company || null,
+          first_name: capitalizeWords(formData.firstName),
+          last_name: capitalizeWords(formData.lastName),
+          email: formData.email.trim().toLowerCase(),
+          company: formData.company ? capitalizeWords(formData.company) : null,
           topic: formData.topic,
           preferred_contact: formData.preferredContact,
-          message: formData.message
+          message: capitalizeFirst(formData.message)
         }
       ]);
 

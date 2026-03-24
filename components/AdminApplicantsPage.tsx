@@ -289,6 +289,33 @@ export const AdminApplicantsPage = () => {
     }
   };
 
+  const restoreApplicants = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase
+        .from('applicants')
+        .update({ deleted_at: null })
+        .in('id', ids)
+        .select();
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error("Restore failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing updates.");
+      }
+
+      setApplicants(prev => prev.map(a => ids.includes(a.id) ? { ...a, deleted_at: null } : a));
+      setSelectedApplicants(prev => prev.filter(id => !ids.includes(id)));
+      addNotification('success', 'Applicants Restored', `Restored ${ids.length} applicant${ids.length > 1 ? 's' : ''}.`);
+      handleModalClose();
+    } catch (err: any) {
+      console.error('Error restoring applicant(s):', err);
+      addNotification('error', 'Restore Failed', `Failed to restore applicant(s): ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const confirmDelete = async () => {
     setIsDeleting(true);
     try {
@@ -443,6 +470,15 @@ export const AdminApplicantsPage = () => {
                 >
                   <Trash2 size={18} />
                   {showDeleted ? 'Delete Permanently' : 'Delete Selected'} ({selectedApplicants.length})
+                </button>
+              )}
+
+              {showDeleted && selectedApplicants.length > 0 && (
+                <button
+                  onClick={() => restoreApplicants(selectedApplicants)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+                >
+                  Restore Selected ({selectedApplicants.length})
                 </button>
               )}
 
@@ -888,6 +924,14 @@ export const AdminApplicantsPage = () => {
                   <h5 className="text-sm font-bold uppercase tracking-wider text-red-500 mb-4 flex items-center gap-2">
                     <Trash2 size={16} /> Danger Zone
                   </h5>
+                  {showDeleted && (
+                    <button 
+                      onClick={() => restoreApplicants([selectedApplicant.id])}
+                      className="w-full py-3 mb-3 bg-green-50 text-green-700 border border-green-200 rounded-xl font-medium hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+                    >
+                      Restore Applicant
+                    </button>
+                  )}
                   <button 
                     onClick={(e) => {
                       handleDeleteApplicant(e, selectedApplicant.id, `${selectedApplicant.first_name} ${selectedApplicant.last_name}`);
