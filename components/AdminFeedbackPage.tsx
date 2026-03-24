@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+import emailjs from '@emailjs/browser';
 import { 
   MessageSquare, Search, Filter, User, LogOut, ChevronLeft, ChevronRight, X, Trash2, Mail
 } from 'lucide-react';
@@ -15,9 +16,17 @@ export const AdminFeedbackPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_wfzsrry';
+  const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_ynn60zq';
+  const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'a5clkwXSA8Hdruwoh';
+
   // Modal State
   const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [replySubject, setReplySubject] = useState('Re: Your message to Lifewood');
+  const [replyMessage, setReplyMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [sendStatus, setSendStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
   // Selection & Delete State
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
@@ -71,12 +80,17 @@ export const AdminFeedbackPage = () => {
 
   const handleRowClick = (msg: any) => {
     setSelectedMessage(msg);
+    setReplySubject('Re: Your message to Lifewood');
+    setReplyMessage('');
+    setSendStatus({ type: null, message: '' });
     setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedMessage(null);
+    setReplyMessage('');
+    setSendStatus({ type: null, message: '' });
   };
 
   const handleDeleteMessage = (e: React.MouseEvent, id: string) => {
@@ -141,6 +155,40 @@ export const AdminFeedbackPage = () => {
       alert(`Failed to delete message(s): ${err.message || 'Unknown error'}`);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!selectedMessage?.email) {
+      setSendStatus({ type: 'error', message: 'No recipient email found.' });
+      return;
+    }
+    if (!replyMessage.trim()) {
+      setSendStatus({ type: 'error', message: 'Please write a reply message before sending.' });
+      return;
+    }
+
+    setIsSending(true);
+    setSendStatus({ type: null, message: '' });
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          to_email: selectedMessage.email,
+          to_name: selectedMessage.first_name || 'there',
+          subject: replySubject,
+          message: replyMessage,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+      setSendStatus({ type: 'success', message: `Email sent to ${selectedMessage.email}.` });
+      setReplyMessage('');
+    } catch (err) {
+      console.error('Failed to send email via EmailJS:', err);
+      setSendStatus({ type: 'error', message: 'Failed to send email. Please try again.' });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -408,21 +456,64 @@ export const AdminFeedbackPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-4 pt-4 border-t border-[#133020]/5">
-                  <a 
-                    href={`mailto:${selectedMessage.email}?subject=Re: Your message to Lifewood`}
-                    className="flex-1 py-3 bg-[#046241] text-white rounded-xl font-medium hover:bg-[#133020] transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Mail size={18} />
-                    Reply via Email
-                  </a>
-                  <button 
-                    onClick={(e) => handleDeleteMessage(e, selectedMessage.id)}
-                    className="px-4 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center"
-                    title="Delete Message"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                <div className="pt-4 border-t border-[#133020]/5 space-y-4">
+                  <div>
+                    <h5 className="text-sm font-bold uppercase tracking-wider text-[#133020]/50 mb-3 flex items-center gap-2">
+                      <Mail size={16} /> Reply
+                    </h5>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-[#133020]/50 block mb-1">Subject</label>
+                        <input
+                          type="text"
+                          value={replySubject}
+                          onChange={(e) => setReplySubject(e.target.value)}
+                          className="w-full bg-white border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-[#133020]/50 block mb-1">Message</label>
+                        <textarea
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          placeholder="Write your reply..."
+                          className="w-full bg-white border border-[#133020]/10 rounded-xl px-4 py-3 text-[#133020] outline-none focus:border-[#046241] focus:ring-2 focus:ring-[#046241]/20 transition-all min-h-[120px] resize-y"
+                        />
+                      </div>
+                      {sendStatus.type && (
+                        <div
+                          className={`text-sm px-3 py-2 rounded-lg border ${
+                            sendStatus.type === 'success'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          {sendStatus.message}
+                        </div>
+                      )}
+                      <div className="flex gap-4">
+                        <button
+                          onClick={handleSendReply}
+                          disabled={isSending}
+                          className="flex-1 py-3 bg-[#046241] text-white rounded-xl font-medium hover:bg-[#133020] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSending ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Mail size={18} />
+                          )}
+                          Send Reply
+                        </button>
+                        <button 
+                          onClick={(e) => handleDeleteMessage(e, selectedMessage.id)}
+                          className="px-4 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center"
+                          title="Delete Message"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>

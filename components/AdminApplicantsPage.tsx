@@ -16,6 +16,7 @@ export const AdminApplicantsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
+  const [showDeleted, setShowDeleted] = useState(false);
 
   // Filter State
   const [filterDate, setFilterDate] = useState('');
@@ -32,7 +33,7 @@ export const AdminApplicantsPage = () => {
 
   // Selection & Delete State
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
-  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, isBulk: boolean, id?: string, name?: string}>({isOpen: false, isBulk: false});
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, isBulk: boolean, isPermanent: boolean, id?: string, name?: string}>({isOpen: false, isBulk: false, isPermanent: false});
   const [isDeleting, setIsDeleting] = useState(false);
 
   const rejectionTemplates = [
@@ -61,6 +62,15 @@ export const AdminApplicantsPage = () => {
           setApplicants([]);
         } else {
           setApplicants(data || []);
+          // Best-effort cleanup for records deleted 30+ days ago
+          const cutoff = new Date();
+          cutoff.setDate(cutoff.getDate() - 30);
+          const staleIds = (data || [])
+            .filter((a: any) => a.deleted_at && new Date(a.deleted_at) < cutoff)
+            .map((a: any) => a.id);
+          if (staleIds.length > 0) {
+            await supabase.from('applicants').delete().in('id', staleIds);
+          }
         }
       } catch (err) {
         console.error('Unexpected error:', err);
@@ -250,11 +260,11 @@ export const AdminApplicantsPage = () => {
 
   const handleDeleteApplicant = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
-    setDeleteModal({ isOpen: true, isBulk: false, id, name });
+    setDeleteModal({ isOpen: true, isBulk: false, isPermanent: showDeleted, id, name });
   };
 
   const handleBulkDeleteClick = () => {
-    setDeleteModal({ isOpen: true, isBulk: true });
+    setDeleteModal({ isOpen: true, isBulk: true, isPermanent: showDeleted });
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -283,39 +293,51 @@ export const AdminApplicantsPage = () => {
     setIsDeleting(true);
     try {
       if (deleteModal.isBulk) {
-        const { data, error } = await supabase
-          .from('applicants')
-          .delete()
-          .in('id', selectedApplicants)
-          .select();
+        const action = deleteModal.isPermanent
+          ? supabase.from('applicants').delete().in('id', selectedApplicants).select()
+          : supabase.from('applicants').update({ deleted_at: new Date().toISOString() }).in('id', selectedApplicants).select();
+        const { data, error } = await action;
 
         if (error) throw error;
         
         if (!data || data.length === 0) {
-          throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
+          throw new Error(deleteModal.isPermanent
+            ? "Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions."
+            : "Soft delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing updates.");
         }
 
-        setApplicants(prev => prev.filter(a => !selectedApplicants.includes(a.id)));
-        addNotification('info', 'Applicants Deleted', `Successfully deleted ${selectedApplicants.length} applicants.`);
+        if (deleteModal.isPermanent) {
+          setApplicants(prev => prev.filter(a => !selectedApplicants.includes(a.id)));
+          addNotification('info', 'Applicants Deleted', `Successfully deleted ${selectedApplicants.length} applicants.`);
+        } else {
+          setApplicants(prev => prev.map(a => selectedApplicants.includes(a.id) ? { ...a, deleted_at: new Date().toISOString() } : a));
+          addNotification('info', 'Applicants Moved to Recently Deleted', `Moved ${selectedApplicants.length} applicants to Recently Deleted.`);
+        }
         setSelectedApplicants([]);
       } else if (deleteModal.id) {
-        const { data, error } = await supabase
-          .from('applicants')
-          .delete()
-          .eq('id', deleteModal.id)
-          .select();
+        const action = deleteModal.isPermanent
+          ? supabase.from('applicants').delete().eq('id', deleteModal.id).select()
+          : supabase.from('applicants').update({ deleted_at: new Date().toISOString() }).eq('id', deleteModal.id).select();
+        const { data, error } = await action;
 
         if (error) throw error;
         
         if (!data || data.length === 0) {
-          throw new Error("Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions.");
+          throw new Error(deleteModal.isPermanent
+            ? "Delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing deletions."
+            : "Soft delete failed. This is likely due to Row Level Security (RLS) policies in your Supabase database preventing updates.");
         }
 
-        setApplicants(prev => prev.filter(a => a.id !== deleteModal.id));
-        addNotification('info', 'Applicant Deleted', `The application for ${deleteModal.name} was successfully deleted.`);
+        if (deleteModal.isPermanent) {
+          setApplicants(prev => prev.filter(a => a.id !== deleteModal.id));
+          addNotification('info', 'Applicant Deleted', `The application for ${deleteModal.name} was permanently deleted.`);
+        } else {
+          setApplicants(prev => prev.map(a => a.id === deleteModal.id ? { ...a, deleted_at: new Date().toISOString() } : a));
+          addNotification('info', 'Applicant Moved to Recently Deleted', `The application for ${deleteModal.name} was moved to Recently Deleted.`);
+        }
         setSelectedApplicants(prev => prev.filter(id => id !== deleteModal.id));
       }
-      setDeleteModal({ isOpen: false, isBulk: false });
+      setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false });
       handleModalClose();
     } catch (err: any) {
       console.error('Error deleting applicant(s):', err);
@@ -327,6 +349,9 @@ export const AdminApplicantsPage = () => {
 
   // Filter applicants based on search and filters
   const filteredApplicants = applicants.filter(applicant => {
+    const isDeleted = !!applicant.deleted_at;
+    if (showDeleted && !isDeleted) return false;
+    if (!showDeleted && isDeleted) return false;
     const matchesSearch = (applicant.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (applicant.last_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (applicant.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -391,8 +416,12 @@ export const AdminApplicantsPage = () => {
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
             <div>
-              <h2 className="text-3xl font-bold text-[#133020]">Applicants</h2>
-              <p className="text-[#133020]/60 mt-1">Manage job applications and track hiring status.</p>
+              <h2 className="text-3xl font-bold text-[#133020]">{showDeleted ? 'Recently Deleted' : 'Applicants'}</h2>
+              <p className="text-[#133020]/60 mt-1">
+                {showDeleted
+                  ? 'Applicants here will be permanently deleted after 30 days or when you delete them here.'
+                  : 'Manage job applications and track hiring status.'}
+              </p>
             </div>
             
             <div className="flex items-center gap-4">
@@ -413,9 +442,25 @@ export const AdminApplicantsPage = () => {
                   className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
                 >
                   <Trash2 size={18} />
-                  Delete Selected ({selectedApplicants.length})
+                  {showDeleted ? 'Delete Permanently' : 'Delete Selected'} ({selectedApplicants.length})
                 </button>
               )}
+
+              <button
+                onClick={() => {
+                  setShowDeleted(prev => !prev);
+                  setSelectedApplicants([]);
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors border ${
+                  showDeleted
+                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                    : 'bg-white text-[#133020] border-[#133020]/10 hover:bg-[#F9F7F7]'
+                }`}
+              >
+                <Trash2 size={18} />
+                {showDeleted ? 'Back to Applicants' : 'Recently Deleted'}
+              </button>
               
               <div className="relative">
                 <button 
@@ -578,7 +623,7 @@ export const AdminApplicantsPage = () => {
                   ) : (
                     <tr>
                       <td colSpan={7} className="px-6 py-12 text-center text-[#133020]/50">
-                        No applicants found matching your search.
+                        {showDeleted ? 'No recently deleted applicants.' : 'No applicants found matching your search.'}
                       </td>
                     </tr>
                   )}
@@ -851,7 +896,7 @@ export const AdminApplicantsPage = () => {
                     className="w-full py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
                   >
                     <Trash2 size={18} />
-                    Delete Applicant
+                    {showDeleted ? 'Delete Permanently' : 'Move to Recently Deleted'}
                   </button>
                 </div>
 
@@ -870,7 +915,7 @@ export const AdminApplicantsPage = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-[#133020]/40 backdrop-blur-sm z-50"
-              onClick={() => setDeleteModal({ isOpen: false, isBulk: false })}
+              onClick={() => setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false })}
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -883,17 +928,24 @@ export const AdminApplicantsPage = () => {
                   <Trash2 size={24} />
                 </div>
                 <h3 className="text-xl font-bold text-[#133020] mb-2">
-                  {deleteModal.isBulk ? 'Delete Selected Applicants' : 'Delete Applicant'}
+                  {deleteModal.isPermanent
+                    ? (deleteModal.isBulk ? 'Delete Selected Applicants' : 'Delete Applicant')
+                    : (deleteModal.isBulk ? 'Move Selected Applicants to Recently Deleted' : 'Move Applicant to Recently Deleted')}
                 </h3>
                 <p className="text-[#133020]/60 mb-6">
-                  {deleteModal.isBulk 
-                    ? `Are you sure you want to delete ${selectedApplicants.length} selected applicants? This action cannot be undone.`
-                    : `Are you sure you want to delete the application for ${deleteModal.name}? This action cannot be undone.`
+                  {deleteModal.isPermanent
+                    ? (deleteModal.isBulk 
+                        ? `Are you sure you want to permanently delete ${selectedApplicants.length} selected applicants? This action cannot be undone.`
+                        : `Are you sure you want to permanently delete the application for ${deleteModal.name}? This action cannot be undone.`
+                      )
+                    : (deleteModal.isBulk
+                        ? `Are you sure you want to move ${selectedApplicants.length} selected applicants to Recently Deleted?`
+                        : `Are you sure you want to move the application for ${deleteModal.name} to Recently Deleted?`)
                   }
                 </p>
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => setDeleteModal({ isOpen: false, isBulk: false })}
+                    onClick={() => setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false })}
                     disabled={isDeleting}
                     className="flex-1 py-3 px-4 rounded-xl font-medium border border-[#133020]/10 text-[#133020] hover:bg-[#F9F7F7] transition-colors disabled:opacity-50"
                   >
@@ -905,7 +957,7 @@ export const AdminApplicantsPage = () => {
                     className="flex-1 py-3 px-4 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                    {isDeleting ? 'Deleting...' : 'Delete'}
+                    {isDeleting ? 'Deleting...' : deleteModal.isPermanent ? 'Delete' : 'Move'}
                   </button>
                 </div>
               </div>
