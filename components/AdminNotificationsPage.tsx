@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Bell, CheckCircle, AlertTriangle, Info, X, Trash2, User, LogOut
+  Bell, CheckCircle, AlertTriangle, Info, X, Trash2, User, LogOut, ListChecks
 } from 'lucide-react';
 
 import AdminSidebar from './AdminSidebar';
@@ -18,6 +18,8 @@ export interface AdminNotification {
 export const AdminNotificationsPage = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
 
   useEffect(() => {
     // Check if admin
@@ -143,6 +145,24 @@ export const AdminNotificationsPage = () => {
           
           <div className="flex items-center gap-3">
             <button 
+              onClick={() => {
+                setShowMultiSelect(prev => {
+                  const next = !prev;
+                  if (!next) setSelectedNotifications([]);
+                  return next;
+                });
+              }}
+              title={showMultiSelect ? 'Hide selection' : 'Select multiple notifications'}
+              aria-label={showMultiSelect ? 'Hide selection' : 'Select multiple notifications'}
+              className={`p-2 rounded-lg border transition-colors ${
+                showMultiSelect
+                  ? 'bg-[#046241] text-white border-[#046241] hover:bg-[#133020]'
+                  : 'bg-white text-[#133020]/60 border-[#133020]/10 hover:bg-[#F9F7F7] hover:text-[#133020]'
+              }`}
+            >
+              <ListChecks size={18} />
+            </button>
+            <button 
               onClick={markAllAsRead}
               disabled={unreadCount === 0}
               className="px-4 py-2 bg-white border border-[#133020]/10 text-[#133020] rounded-lg text-sm font-medium hover:bg-[#F9F7F7] transition-colors disabled:opacity-50"
@@ -181,6 +201,19 @@ export const AdminNotificationsPage = () => {
                     className={`p-6 transition-colors flex gap-4 ${getBgColor(notification.type, notification.read)} hover:bg-[#F9F7F7]`}
                     onClick={() => !notification.read && markAsRead(notification.id)}
                   >
+                    {showMultiSelect && (
+                      <div className="flex items-start pt-1" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                          checked={selectedNotifications.includes(notification.id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedNotifications(prev => checked ? [...prev, notification.id] : prev.filter(id => id !== notification.id));
+                          }}
+                        />
+                      </div>
+                    )}
                     <div className="flex-shrink-0 mt-1">
                       {getIcon(notification.type)}
                     </div>

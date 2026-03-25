@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import emailjs from '@emailjs/browser';
 import { 
-  MessageSquare, Search, Filter, User, LogOut, ChevronLeft, ChevronRight, X, Trash2, Mail
+  MessageSquare, Search, Filter, User, LogOut, ChevronLeft, ChevronRight, X, Trash2, Mail, ListChecks
 } from 'lucide-react';
 
 import AdminSidebar from './AdminSidebar';
@@ -32,6 +32,7 @@ export const AdminFeedbackPage = () => {
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, isBulk: boolean, id?: string}>({isOpen: false, isBulk: false});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
 
   useEffect(() => {
     // Check if admin
@@ -270,7 +271,26 @@ export const AdminFeedbackPage = () => {
                 />
               </div>
               
-              {selectedMessages.length > 0 && (
+              <button
+                onClick={() => {
+                  setShowMultiSelect(prev => {
+                    const next = !prev;
+                    if (!next) setSelectedMessages([]);
+                    return next;
+                  });
+                }}
+                title={showMultiSelect ? 'Hide selection' : 'Select multiple messages'}
+                aria-label={showMultiSelect ? 'Hide selection' : 'Select multiple messages'}
+                className={`p-2.5 rounded-full border transition-colors ${
+                  showMultiSelect
+                    ? 'bg-[#046241] text-white border-[#046241] hover:bg-[#133020]'
+                    : 'bg-white text-[#133020]/60 border-[#133020]/10 hover:bg-[#F9F7F7] hover:text-[#133020]'
+                }`}
+              >
+                <ListChecks size={18} />
+              </button>
+
+              {showMultiSelect && selectedMessages.length > 0 && (
                 <button
                   onClick={handleBulkDeleteClick}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
@@ -288,14 +308,16 @@ export const AdminFeedbackPage = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F9F7F7] text-[#133020]/60 text-xs uppercase tracking-wider border-b border-[#133020]/5">
-                    <th className="px-6 py-4 font-semibold w-12">
-                      <input 
-                        type="checkbox" 
-                        className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
-                        checked={currentMessages.length > 0 && currentMessages.every(m => selectedMessages.includes(m.id))}
-                        onChange={handleSelectAll}
-                      />
-                    </th>
+                    {showMultiSelect && (
+                      <th className="px-6 py-4 font-semibold w-12">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                          checked={currentMessages.length > 0 && currentMessages.every(m => selectedMessages.includes(m.id))}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                    )}
                     <th className="px-6 py-4 font-semibold">Sender</th>
                     <th className="px-6 py-4 font-semibold">Email</th>
                     <th className="px-6 py-4 font-semibold">Message Preview</th>
@@ -310,14 +332,16 @@ export const AdminFeedbackPage = () => {
                         className={`hover:bg-[#F9F7F7]/50 transition-colors cursor-pointer group ${selectedMessages.includes(msg.id) ? 'bg-[#046241]/5' : ''}`}
                         onClick={() => handleRowClick(msg)}
                       >
-                        <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                          <input 
-                            type="checkbox" 
-                            className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
-                            checked={selectedMessages.includes(msg.id)}
-                            onChange={(e) => handleSelectMessage(e, msg.id)}
-                          />
-                        </td>
+                        {showMultiSelect && (
+                          <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                              checked={selectedMessages.includes(msg.id)}
+                              onChange={(e) => handleSelectMessage(e, msg.id)}
+                            />
+                          </td>
+                        )}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241] font-bold text-sm">
@@ -346,7 +370,7 @@ export const AdminFeedbackPage = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-[#133020]/50">
+                      <td colSpan={showMultiSelect ? 5 : 4} className="px-6 py-12 text-center text-[#133020]/50">
                         No feedback messages found.
                       </td>
                     </tr>

@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import emailjs from '@emailjs/browser';
 import { 
   Users, Search, Filter, MoreVertical, ShieldCheck, 
-  User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2, FileText, Download, Trash2
+  User, Mail, MapPin, Briefcase, Clock, LogOut, ChevronLeft, ChevronRight, X, Save, Loader2, FileText, Download, Trash2, ListChecks
 } from 'lucide-react';
 
 import AdminSidebar from './AdminSidebar';
@@ -30,11 +30,13 @@ export const AdminApplicantsPage = () => {
   const [editFormData, setEditFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [generatedCredentials, setGeneratedCredentials] = useState<{email: string, password: string} | null>(null);
+  const [filePreview, setFilePreview] = useState<{ url: string; name?: string } | null>(null);
 
   // Selection & Delete State
   const [selectedApplicants, setSelectedApplicants] = useState<string[]>([]);
   const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, isBulk: boolean, isPermanent: boolean, id?: string, name?: string}>({isOpen: false, isBulk: false, isPermanent: false});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showMultiSelect, setShowMultiSelect] = useState(false);
 
   const rejectionTemplates = [
     "Thank you for your interest. Unfortunately, we have decided to move forward with other candidates whose qualifications better match our current needs.",
@@ -97,6 +99,7 @@ export const AdminApplicantsPage = () => {
     setIsModalOpen(false);
     setSelectedApplicant(null);
     setGeneratedCredentials(null);
+    setFilePreview(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -462,8 +465,27 @@ export const AdminApplicantsPage = () => {
                   className="pl-10 pr-4 py-2.5 bg-white border border-[#133020]/10 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#046241]/20 w-full md:w-64 transition-all"
                 />
               </div>
-              
-              {selectedApplicants.length > 0 && (
+
+              <button
+                onClick={() => {
+                  setShowMultiSelect(prev => {
+                    const next = !prev;
+                    if (!next) setSelectedApplicants([]);
+                    return next;
+                  });
+                }}
+                title={showMultiSelect ? 'Hide selection' : 'Select multiple applicants'}
+                aria-label={showMultiSelect ? 'Hide selection' : 'Select multiple applicants'}
+                className={`p-2.5 rounded-full border transition-colors ${
+                  showMultiSelect
+                    ? 'bg-[#046241] text-white border-[#046241] hover:bg-[#133020]'
+                    : 'bg-white text-[#133020]/60 border-[#133020]/10 hover:bg-[#F9F7F7] hover:text-[#133020]'
+                }`}
+              >
+                <ListChecks size={18} />
+              </button>
+
+              {showMultiSelect && selectedApplicants.length > 0 && (
                 <button
                   onClick={handleBulkDeleteClick}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
@@ -473,7 +495,7 @@ export const AdminApplicantsPage = () => {
                 </button>
               )}
 
-              {showDeleted && selectedApplicants.length > 0 && (
+              {showMultiSelect && showDeleted && selectedApplicants.length > 0 && (
                 <button
                   onClick={() => restoreApplicants(selectedApplicants)}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
@@ -495,7 +517,7 @@ export const AdminApplicantsPage = () => {
                 }`}
               >
                 <Trash2 size={18} />
-                {showDeleted ? 'Back to Applicants' : 'Recently Deleted'}
+                {showDeleted ? 'Back to Applicants' : 'Trash'}
               </button>
               
               <div className="relative">
@@ -591,14 +613,16 @@ export const AdminApplicantsPage = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F9F7F7] text-[#133020]/60 text-xs uppercase tracking-wider border-b border-[#133020]/5">
-                    <th className="px-6 py-4 font-semibold w-12">
-                      <input 
-                        type="checkbox" 
-                        className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
-                        checked={currentApplicants.length > 0 && currentApplicants.every(a => selectedApplicants.includes(a.id))}
-                        onChange={handleSelectAll}
-                      />
-                    </th>
+                    {showMultiSelect && (
+                      <th className="px-6 py-4 font-semibold w-12">
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                          checked={currentApplicants.length > 0 && currentApplicants.every(a => selectedApplicants.includes(a.id))}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                    )}
                     <th className="px-6 py-4 font-semibold">Applicant</th>
                     <th className="px-6 py-4 font-semibold">Unique ID</th>
                     <th className="px-6 py-4 font-semibold">Position</th>
@@ -614,14 +638,16 @@ export const AdminApplicantsPage = () => {
                         className={`hover:bg-[#F9F7F7]/50 transition-colors cursor-pointer group ${selectedApplicants.includes(applicant.id) ? 'bg-[#046241]/5' : ''}`}
                         onClick={() => handleRowClick(applicant)}
                       >
-                        <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                          <input 
-                            type="checkbox" 
-                            className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
-                            checked={selectedApplicants.includes(applicant.id)}
-                            onChange={(e) => handleSelectApplicant(e, applicant.id)}
-                          />
-                        </td>
+                        {showMultiSelect && (
+                          <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 rounded border-[#133020]/20 text-[#046241] focus:ring-[#046241]"
+                              checked={selectedApplicants.includes(applicant.id)}
+                              onChange={(e) => handleSelectApplicant(e, applicant.id)}
+                            />
+                          </td>
+                        )}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241] font-bold text-sm">
@@ -658,7 +684,7 @@ export const AdminApplicantsPage = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-[#133020]/50">
+                      <td colSpan={showMultiSelect ? 7 : 6} className="px-6 py-12 text-center text-[#133020]/50">
                         {showDeleted ? 'No recently deleted applicants.' : 'No applicants found matching your search.'}
                       </td>
                     </tr>
@@ -830,11 +856,10 @@ export const AdminApplicantsPage = () => {
                     <FileText size={16} /> Resume / CV
                   </h5>
                   {selectedApplicant.cv_url ? (
-                    <a 
-                      href={selectedApplicant.cv_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 border border-[#133020]/10 rounded-xl hover:border-[#046241] hover:bg-[#046241]/5 transition-colors group"
+                    <button
+                      type="button"
+                      onClick={() => setFilePreview({ url: selectedApplicant.cv_url, name: selectedApplicant.cv_name || 'Resume Document' })}
+                      className="w-full text-left flex items-center justify-between p-4 border border-[#133020]/10 rounded-xl hover:border-[#046241] hover:bg-[#046241]/5 transition-colors group"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <div className="p-2 bg-[#046241]/10 text-[#046241] rounded-lg">
@@ -843,7 +868,7 @@ export const AdminApplicantsPage = () => {
                         <span className="font-medium text-[#133020] truncate">{selectedApplicant.cv_name || 'Resume Document'}</span>
                       </div>
                       <Download size={18} className="text-[#133020]/40 group-hover:text-[#046241]" />
-                    </a>
+                    </button>
                   ) : selectedApplicant.cv_name ? (
                     <div className="p-4 border border-[#133020]/10 rounded-xl bg-gray-50 flex items-center gap-3">
                       <FileText size={20} className="text-gray-400" />
@@ -940,12 +965,70 @@ export const AdminApplicantsPage = () => {
                     className="w-full py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
                   >
                     <Trash2 size={18} />
-                    {showDeleted ? 'Delete Permanently' : 'Move to Recently Deleted'}
+                    {showDeleted ? 'Delete Permanently' : 'Move to Trash'}
                   </button>
                 </div>
 
               </div>
             </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* File Preview Modal */}
+      <AnimatePresence>
+        {filePreview && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setFilePreview(null)}
+              className="fixed inset-0 bg-[#133020]/40 backdrop-blur-sm z-50"
+            />
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: 10 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 220 }}
+                className="w-full max-w-5xl h-[80vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#133020]/10 flex flex-col"
+              >
+                <div className="px-5 py-4 border-b border-[#133020]/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 bg-[#046241]/10 text-[#046241] rounded-lg">
+                      <FileText size={18} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-[#133020] truncate">{filePreview.name || 'Document'}</div>
+                      <div className="text-xs text-[#133020]/50">Preview</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={filePreview.url}
+                      download
+                      className="px-3 py-2 text-sm rounded-lg border border-[#133020]/10 text-[#133020]/70 hover:text-[#133020] hover:bg-[#F9F7F7] transition-colors"
+                    >
+                      Download
+                    </a>
+                    <button 
+                      onClick={() => setFilePreview(null)}
+                      className="p-2 text-[#133020]/40 hover:text-[#133020] hover:bg-[#F9F7F7] rounded-full transition-colors"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 bg-[#F9F7F7]">
+                  <iframe
+                    title={filePreview.name || 'Document Preview'}
+                    src={filePreview.url}
+                    className="w-full h-full"
+                  />
+                </div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
@@ -961,51 +1044,53 @@ export const AdminApplicantsPage = () => {
               className="fixed inset-0 bg-[#133020]/40 backdrop-blur-sm z-50"
               onClick={() => setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false })}
             />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white rounded-3xl shadow-2xl z-50 overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-4">
-                  <Trash2 size={24} />
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-[90%] max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-4">
+                    <Trash2 size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-[#133020] mb-2">
+                    {deleteModal.isPermanent
+                      ? (deleteModal.isBulk ? 'Delete Selected Applicants' : 'Delete Applicant')
+                      : (deleteModal.isBulk ? 'Move Selected Applicants to Recently Deleted' : 'Move Applicant to Recently Deleted')}
+                  </h3>
+                  <p className="text-[#133020]/60 mb-6">
+                    {deleteModal.isPermanent
+                      ? (deleteModal.isBulk 
+                          ? `Are you sure you want to permanently delete ${selectedApplicants.length} selected applicants? This action cannot be undone.`
+                          : `Are you sure you want to permanently delete the application for ${deleteModal.name}? This action cannot be undone.`
+                        )
+                      : (deleteModal.isBulk
+                          ? `Are you sure you want to move ${selectedApplicants.length} selected applicants to Trash?`
+                          : `Are you sure you want to move the application for ${deleteModal.name} to Recently Deleted?`)
+                    }
+                  </p>
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false })}
+                      disabled={isDeleting}
+                      className="flex-1 py-3 px-4 rounded-xl font-medium border border-[#133020]/10 text-[#133020] hover:bg-[#F9F7F7] transition-colors disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={confirmDelete}
+                      disabled={isDeleting}
+                      className="flex-1 py-3 px-4 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                      {isDeleting ? 'Deleting...' : deleteModal.isPermanent ? 'Delete' : 'Move'}
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-[#133020] mb-2">
-                  {deleteModal.isPermanent
-                    ? (deleteModal.isBulk ? 'Delete Selected Applicants' : 'Delete Applicant')
-                    : (deleteModal.isBulk ? 'Move Selected Applicants to Recently Deleted' : 'Move Applicant to Recently Deleted')}
-                </h3>
-                <p className="text-[#133020]/60 mb-6">
-                  {deleteModal.isPermanent
-                    ? (deleteModal.isBulk 
-                        ? `Are you sure you want to permanently delete ${selectedApplicants.length} selected applicants? This action cannot be undone.`
-                        : `Are you sure you want to permanently delete the application for ${deleteModal.name}? This action cannot be undone.`
-                      )
-                    : (deleteModal.isBulk
-                        ? `Are you sure you want to move ${selectedApplicants.length} selected applicants to Recently Deleted?`
-                        : `Are you sure you want to move the application for ${deleteModal.name} to Recently Deleted?`)
-                  }
-                </p>
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => setDeleteModal({ isOpen: false, isBulk: false, isPermanent: false })}
-                    disabled={isDeleting}
-                    className="flex-1 py-3 px-4 rounded-xl font-medium border border-[#133020]/10 text-[#133020] hover:bg-[#F9F7F7] transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={confirmDelete}
-                    disabled={isDeleting}
-                    className="flex-1 py-3 px-4 rounded-xl font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                    {isDeleting ? 'Deleting...' : deleteModal.isPermanent ? 'Delete' : 'Move'}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>

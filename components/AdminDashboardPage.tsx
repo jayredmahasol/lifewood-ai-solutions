@@ -26,7 +26,6 @@ import {
   UserRound,
   ListChecks
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AdminSidebar from './AdminSidebar';
 
 export const AdminDashboardPage = () => {
@@ -191,6 +190,14 @@ export const AdminDashboardPage = () => {
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
   const activeApplicants = useMemo(() => applicants.filter(a => !a.deleted_at), [applicants]);
+  const deletedApplicantsCount = useMemo(() => applicants.filter(a => a.deleted_at).length, [applicants]);
+  const suspendedUsersCount = useMemo(() => users.filter(u => u.website === 'suspended').length, [users]);
+  const activeSchoolsCount = useMemo(() => new Set(users.map(u => u.school).filter(Boolean)).size, [users]);
+  const recentUserUpdates = useMemo(() => {
+    return [...users]
+      .sort((a, b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime())
+      .slice(0, 5);
+  }, [users]);
 
   const applicantsStats = useMemo(() => {
     const total = activeApplicants.length;
@@ -207,18 +214,6 @@ export const AdminDashboardPage = () => {
   }, [activeApplicants]);
 
   // Analytics Data
-  const schoolData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    users.forEach(u => {
-      const school = u.school || 'Unknown';
-      counts[school] = (counts[school] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  }, [users]);
-
   const designationData = useMemo(() => {
     const counts: Record<string, number> = {};
     users.forEach(u => {
@@ -433,22 +428,37 @@ export const AdminDashboardPage = () => {
             {/* Users Section */}
             <section className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[#133020]">Users Overview</h2>
-                <p className="text-[#133020]/60">Registered profiles and activity.</p>
+                <h2 className="text-2xl font-bold text-[#133020]">System Snapshot</h2>
+                <p className="text-[#133020]/60">Quick health checks across users and applicants.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
+                  className="bg-white rounded-[1.75rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-4"
                 >
-                  <div className="w-16 h-16 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
-                    <Users size={32} />
+                  <div className="w-12 h-12 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                    <Users size={22} />
                   </div>
                   <div>
-                    <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Total Users</p>
-                    <h3 className="text-4xl font-bold text-[#133020]">{users.length}</h3>
+                    <p className="text-[#133020]/50 text-xs font-bold uppercase tracking-wider mb-1">Total Users</p>
+                    <h3 className="text-3xl font-bold text-[#133020]">{users.length}</h3>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="bg-white rounded-[1.75rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-4"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
+                    <Briefcase size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[#133020]/50 text-xs font-bold uppercase tracking-wider mb-1">Active Schools</p>
+                    <h3 className="text-3xl font-bold text-[#133020]">{activeSchoolsCount}</h3>
                   </div>
                 </motion.div>
 
@@ -456,126 +466,103 @@ export const AdminDashboardPage = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-6"
+                  className="bg-white rounded-[1.75rem] p-6 shadow-sm border border-[#133020]/5 flex items-center gap-4"
                 >
-                  <div className="w-16 h-16 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
-                    <Briefcase size={32} />
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <ShieldCheck size={22} />
                   </div>
                   <div>
-                    <p className="text-[#133020]/50 text-sm font-bold uppercase tracking-wider mb-1">Active Schools</p>
-                    <h3 className="text-4xl font-bold text-[#133020]">
-                      {new Set(users.map(u => u.school).filter(Boolean)).size}
-                    </h3>
+                    <p className="text-[#133020]/50 text-xs font-bold uppercase tracking-wider mb-1">Suspended Users</p>
+                    <h3 className="text-3xl font-bold text-[#133020]">{suspendedUsersCount}</h3>
                   </div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-[#133020] rounded-[2rem] p-6 shadow-xl flex items-center gap-6 text-white relative overflow-hidden"
+                  transition={{ delay: 0.15 }}
+                  className="bg-[#133020] rounded-[1.75rem] p-6 shadow-xl border border-[#133020]/5 text-white flex items-center gap-4"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFB347] rounded-full blur-[50px] opacity-20 -translate-y-1/2 translate-x-1/2"></div>
-                  <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-[#FFB347] relative z-10">
-                    <Clock size={32} />
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[#FFB347]">
+                    <Clock size={22} />
                   </div>
-                  <div className="relative z-10">
-                    <p className="text-white/60 text-sm font-bold uppercase tracking-wider mb-1">Recent Updates</p>
-                    <h3 className="text-4xl font-bold text-white">
-                      {users.filter(u => new Date(u.updated_at || Date.now()) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
-                    </h3>
+                  <div>
+                    <p className="text-white/60 text-xs font-bold uppercase tracking-wider mb-1">Deleted Applicants</p>
+                    <h3 className="text-3xl font-bold text-white">{deletedApplicantsCount}</h3>
                   </div>
                 </motion.div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
-                      <BarChart2 size={20} />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5 lg:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#046241]/10 flex items-center justify-center text-[#046241]">
+                        <BarChart2 size={20} />
+                      </div>
+                      <h3 className="text-lg font-bold text-[#133020]">Recent User Updates</h3>
                     </div>
-                    <h3 className="text-lg font-bold text-[#133020]">Top Schools</h3>
+                    <span className="text-xs text-[#133020]/50">Latest 5</span>
                   </div>
-                  <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={schoolData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#13302010" />
-                        <XAxis
-                          dataKey="name"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#13302080' }}
-                          tickFormatter={(val) => val.length > 15 ? val.substring(0, 15) + '...' : val}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 12, fill: '#13302080' }}
-                          allowDecimals={false}
-                        />
-                        <Tooltip
-                          cursor={{ fill: '#13302005' }}
-                          contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
-                        />
-                        <Bar dataKey="count" fill="#046241" radius={[4, 4, 0, 0]} barSize={40} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="space-y-3">
+                    {recentUserUpdates.length > 0 ? (
+                      recentUserUpdates.map(user => (
+                        <div key={user.id} className="flex items-center justify-between p-3 rounded-xl border border-[#133020]/5 hover:bg-[#F9F7F7] transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-[#133020]/5 flex items-center justify-center overflow-hidden border border-[#133020]/10">
+                              {user.avatar_url ? (
+                                <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-[#133020] font-bold text-xs">
+                                  {(user.first_name?.[0] || user.full_name?.[0] || '?').toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-[#133020]">
+                                {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || 'Unknown User'}
+                              </p>
+                              <p className="text-xs text-[#133020]/50">{user.school || 'No school set'}</p>
+                            </div>
+                          </div>
+                          <div className="text-xs text-[#133020]/50">
+                            {user.updated_at ? new Date(user.updated_at).toLocaleDateString() : 'No updates'}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-[#133020]/50">No recent user updates.</div>
+                    )}
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5"
-                >
-                  <div className="flex items-center gap-3 mb-6">
+                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-[#133020]/5">
+                  <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-[#FFB347]/20 flex items-center justify-center text-[#133020]">
                       <PieChartIcon size={20} />
                     </div>
-                    <h3 className="text-lg font-bold text-[#133020]">Designations</h3>
+                    <h3 className="text-lg font-bold text-[#133020]">Designation Mix</h3>
                   </div>
-                  <div className="h-[300px] w-full flex items-center justify-center">
-                    {designationData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={designationData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={80}
-                            outerRadius={110}
-                            paddingAngle={5}
-                            dataKey="value"
-                            stroke="none"
-                          >
-                            {designationData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="text-[#133020]/40 text-sm">No data available</div>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap justify-center gap-4 mt-2">
-                    {designationData.slice(0, 5).map((entry, index) => (
-                      <div key={index} className="flex items-center gap-2 text-xs text-[#133020]/70">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                        <span>{entry.name} ({entry.value})</span>
+                  <div className="space-y-4">
+                    {designationData.slice(0, 4).map((entry, index) => (
+                      <div key={entry.name} className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-[#133020] font-medium">{entry.name}</span>
+                          <span className="text-[#133020]/60">{entry.value}</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-[#F9F7F7] overflow-hidden">
+                          <div
+                            className="h-full"
+                            style={{ width: `${(entry.value / Math.max(users.length, 1)) * 100}%`, backgroundColor: COLORS[index % COLORS.length] }}
+                          ></div>
+                        </div>
                       </div>
                     ))}
+                    {designationData.length === 0 && (
+                      <div className="text-sm text-[#133020]/50">No designation data available.</div>
+                    )}
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Users Table Section */}
