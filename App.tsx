@@ -186,16 +186,7 @@ function App() {
                 <About />
                 
                 {/* Contact/Explore Banner */}
-                <div className="px-6 py-8">
-                     <div className="max-w-7xl mx-auto flex gap-4">
-                         <a href="#contact" className="px-6 py-3 bg-lifewood-orange rounded-full font-medium text-sm hover:bg-lifewood-lightOrange transition-colors">
-                             Contact us now
-                         </a>
-                         <a href="#ai-services" className="px-6 py-3 border border-lifewood-darkGreen rounded-full font-medium text-sm hover:bg-lifewood-darkGreen hover:text-white transition-colors flex items-center gap-2">
-                             <span className="text-lg leading-none">↗</span> Explore more
-                         </a>
-                     </div>
-                </div>
+                
 
                 <Stats />
                 <Clients />

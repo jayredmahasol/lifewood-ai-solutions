@@ -12,6 +12,7 @@ export const About: React.FC = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="max-w-5xl mx-auto text-center"
       >
+        
         <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#f5eedb] text-[#133020] text-sm font-semibold tracking-wider uppercase mb-12">
           <span className="w-2 h-2 rounded-full bg-[#046241]"></span>
           About Us

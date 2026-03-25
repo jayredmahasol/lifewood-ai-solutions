@@ -45,7 +45,11 @@ export const ApplicationFormPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const sanitizedValue =
+      name === 'firstName' || name === 'lastName'
+        ? value.replace(/\d+/g, '')
+        : value;
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     setErrors(prev => {
       const updated = { ...prev };
       delete updated[name];

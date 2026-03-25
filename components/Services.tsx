@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Mic, FileText, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
 
@@ -30,24 +30,24 @@ const services = [
 ];
 
 export const Services: React.FC = () => {
-  const [activeService, setActiveService] = useState(services[0].id);
-
   return (
-    <section className="py-32 px-6 bg-[#133020] text-[#f5eedb] overflow-hidden">
+    <section className="py-28 px-6 bg-gradient-to-b from-white via-[#f9f7f1] to-white text-[#133020] overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="mb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-[#FFB347] text-sm font-semibold tracking-wider uppercase mb-6 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#FFB347]"></span>
-              Our Expertise
+            <div className="flex justify-center lg:justify-start mb-6">
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-[#133020]/10 text-[#133020] text-xs font-semibold tracking-wider uppercase shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#046241]"></span>
+                Our Expertise
+              </div>
             </div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight text-white"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-5 tracking-tight text-[#133020]"
             >
               AI Data Services
             </motion.h2>
@@ -56,7 +56,7 @@ export const Services: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-white/70 leading-relaxed"
+              className="text-base md:text-lg text-[#133020]/60 leading-relaxed"
             >
               Lifewood offers AI and IT services that enhance decision-making, reduce costs, and improve productivity to optimize organizational performance.
             </motion.p>
@@ -67,67 +67,45 @@ export const Services: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <a href="#ai-services" className="group flex items-center gap-3 px-8 py-4 bg-[#FFB347] text-[#133020] rounded-full font-bold hover:bg-[#ffc370] transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1">
+            <a href="#ai-services" className="group flex items-center gap-3 px-8 py-4 bg-[#133020] text-white rounded-full font-bold hover:bg-[#046241] transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
               <span>Explore Services</span>
               <ArrowUpRight size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </a>
           </motion.div>
         </div>
 
-        {/* Interactive Expanding Cards */}
-        <div className="flex flex-col lg:flex-row gap-4 h-[800px] lg:h-[600px]">
-          {services.map((service, index) => {
-            const isActive = activeService === service.id;
-            
-            return (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                onMouseEnter={() => setActiveService(service.id)}
-                onClick={() => setActiveService(service.id)}
-                className={`relative rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-500 ease-in-out flex flex-col ${isActive ? 'lg:flex-[3] flex-[3]' : 'lg:flex-[1] flex-[1]'}`}
-              >
-                {/* Background Image */}
-                <img 
-                  src={service.image} 
+        {/* Services Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.map((service, index) => (
+            <motion.div
+              key={service.id}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-white border border-[#133020]/10 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={service.image}
                   alt={service.title}
-                  className={`absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ${isActive ? 'scale-105' : 'scale-100 grayscale-[30%]'}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
-                
-                {/* Gradient Overlay */}
-                <div className={`absolute inset-0 transition-opacity duration-500 ${isActive ? 'bg-gradient-to-t from-[#133020] via-[#133020]/40 to-transparent opacity-90' : 'bg-[#133020]/60 hover:bg-[#133020]/40'}`}></div>
-
-                {/* Content */}
-                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md transition-colors duration-300 ${isActive ? 'bg-[#FFB347] text-[#133020]' : 'bg-white/20 text-white'}`}>
-                      <service.icon size={24} />
-                    </div>
-                    <h3 className={`text-3xl md:text-4xl font-bold text-white transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-100 lg:opacity-0 lg:-translate-x-4'}`}>
-                      {service.title}
-                    </h3>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#046241]/10 text-[#046241] flex items-center justify-center">
+                    <service.icon size={20} />
                   </div>
-                  
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isActive ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <p className="text-[#FFB347] font-medium mb-2 text-lg">{service.subtitle}</p>
-                    <p className="text-white/80 text-base md:text-lg leading-relaxed max-w-xl">
-                      {service.description}
-                    </p>
+                  <div>
+                    <h3 className="text-xl font-semibold text-[#133020]">{service.title}</h3>
+                    <p className="text-sm text-[#133020]/50">{service.subtitle}</p>
                   </div>
                 </div>
-
-                {/* Vertical Title for non-active state on desktop */}
-                <div className={`hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none transition-all duration-500 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
-                  <h3 className="text-3xl font-bold text-white tracking-widest -rotate-90 whitespace-nowrap">
-                    {service.title}
-                  </h3>
-                </div>
-              </motion.div>
-            );
-          })}
+                <p className="text-sm text-[#133020]/60 leading-relaxed">{service.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

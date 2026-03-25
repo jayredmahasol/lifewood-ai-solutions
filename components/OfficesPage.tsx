@@ -109,7 +109,7 @@ export const OfficesPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="pt-32 pb-20 bg-[#f5eedb] min-h-screen font-sans text-[#133020] selection:bg-[#FFB347] selection:text-[#133020] overflow-hidden">
+    <div className="pt-32 pb-20 bg-gradient-to-b from-white via-[#f9f7f1] to-white min-h-screen font-sans text-[#133020] selection:bg-[#FFB347] selection:text-[#133020] overflow-hidden">
       
       {/* Header Section */}
       <section className="px-6 max-w-7xl mx-auto mb-20">
@@ -117,10 +117,12 @@ export const OfficesPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex items-center gap-3 mb-8"
+          className="mb-6"
         >
-           <div className="h-[1px] w-12 bg-[#046241]"></div>
-           <span className="text-[#046241] font-mono text-sm tracking-widest uppercase font-semibold">Global Presence</span>
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-[#133020]/10 text-[#133020] text-xs font-semibold tracking-wider uppercase shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-[#046241]"></span>
+            Global Presence
+          </div>
         </motion.div>
 
         <div className="flex flex-col md:flex-row justify-between items-end gap-12">
@@ -130,12 +132,12 @@ export const OfficesPage: React.FC = () => {
              transition={{ duration: 0.8, delay: 0.2 }}
              className="max-w-4xl"
            >
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8 leading-[0.9] text-[#133020]">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-[#133020]">
                 Largest Global <br/>
                 <span className="text-[#046241]">Data Distribution.</span>
               </h1>
-              <p className="text-xl md:text-2xl text-[#133020]/80 leading-relaxed font-light max-w-2xl">
-                Connecting resources across continents to deliver unparalleled data solutions.
+              <p className="text-lg md:text-xl text-[#133020]/60 leading-relaxed max-w-2xl">
+                Connecting resources across continents to deliver secure, scalable data solutions.
               </p>
            </motion.div>
 
@@ -143,7 +145,7 @@ export const OfficesPage: React.FC = () => {
              initial={{ opacity: 0, scale: 0.9 }}
              animate={{ opacity: 1, scale: 1 }}
              transition={{ duration: 0.8, delay: 0.3 }}
-             className="hidden md:flex flex-col items-center"
+             className="hidden"
            >
               <div className="relative w-32 h-32 flex items-center justify-center animate-[spin_10s_linear_infinite]">
                  <svg viewBox="0 0 100 100" width="120" height="120">
@@ -171,12 +173,12 @@ export const OfficesPage: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="lg:col-span-8 xl:col-span-9 bg-[#F9F7F7] rounded-[3rem] overflow-hidden relative shadow-inner min-h-[400px] border border-[#133020]/5"
+            className="lg:col-span-8 xl:col-span-9 bg-white rounded-[2.5rem] overflow-hidden relative shadow-sm min-h-[400px] border border-[#133020]/10"
           >
             <div ref={mapContainerRef} className="absolute inset-0 z-0 grayscale opacity-80 hover:grayscale-0 transition-all duration-700"></div>
             
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#F9F7F7]/50"></div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-white/60"></div>
           </motion.div>
 
           {/* Stats Card */}
@@ -184,52 +186,48 @@ export const OfficesPage: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="lg:col-span-4 xl:col-span-3 bg-[#133020] rounded-[3rem] p-8 md:p-10 flex flex-col justify-between text-white shadow-2xl relative overflow-hidden"
+            className="lg:col-span-4 xl:col-span-3 bg-white rounded-[2.5rem] p-8 md:p-10 flex flex-col justify-between text-[#133020] shadow-sm border border-[#133020]/10 relative overflow-hidden"
           >
-             {/* Decorative shine */}
-             <div className="absolute top-0 right-0 w-64 h-64 bg-[#046241] opacity-20 rounded-full -translate-y-1/2 translate-x-1/2 blur-[80px]"></div>
-             <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#FFB347] opacity-10 rounded-full translate-y-1/2 -translate-x-1/2 blur-[60px]"></div>
-
-             <div className="relative z-10 flex flex-col gap-12 h-full justify-center">
+             <div className="relative z-10 flex flex-col gap-10 h-full justify-center">
                 
                 {/* Stat 1 */}
                 <div className="group">
-                  <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
+                  <div className="flex items-center gap-3 mb-2 text-[#046241]">
                      <Users size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Resources</span>
                   </div>
                   <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
                     <Counter value={56788} />
                   </div>
-                  <div className="text-lg font-light opacity-60">Active Online Contributors</div>
+                  <div className="text-sm text-[#133020]/60">Active Online Contributors</div>
                 </div>
 
-                <div className="w-full h-[1px] bg-white/10"></div>
+                <div className="w-full h-[1px] bg-[#133020]/10"></div>
 
                 {/* Stat 2 */}
                 <div className="group">
-                  <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
+                  <div className="flex items-center gap-3 mb-2 text-[#046241]">
                      <Globe size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Coverage</span>
                   </div>
                   <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
                     <Counter value={30} /> +
                   </div>
-                  <div className="text-lg font-light opacity-60">Countries Represented</div>
+                  <div className="text-sm text-[#133020]/60">Countries Represented</div>
                 </div>
 
-                <div className="w-full h-[1px] bg-white/10"></div>
+                <div className="w-full h-[1px] bg-[#133020]/10"></div>
 
                 {/* Stat 3 */}
                 <div className="group">
-                  <div className="flex items-center gap-3 mb-2 text-[#FFB347]">
+                  <div className="flex items-center gap-3 mb-2 text-[#046241]">
                      <Building2 size={24} />
                      <span className="text-sm font-mono tracking-widest uppercase opacity-80">Network</span>
                   </div>
                   <div className="text-5xl md:text-6xl font-bold mb-2 group-hover:text-[#FFB347] transition-colors duration-300">
                     <Counter value={40} /> +
                   </div>
-                  <div className="text-lg font-light opacity-60">Global Centers</div>
+                  <div className="text-sm text-[#133020]/60">Global Centers</div>
                 </div>
 
              </div>
@@ -251,21 +249,18 @@ export const OfficesPage: React.FC = () => {
            initial={{ opacity: 0, scale: 0.95 }}
            whileInView={{ opacity: 1, scale: 1 }}
            viewport={{ once: true }}
-           className="bg-[#FFB347] rounded-[3rem] p-12 md:p-20 text-[#133020] relative overflow-hidden shadow-xl"
+           className="bg-white rounded-[2.5rem] p-10 md:p-14 text-[#133020] relative overflow-hidden shadow-sm border border-[#133020]/10"
          >
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-            </div>
-            
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,_rgba(4,98,65,0.08),_transparent_55%)]"></div>
             <div className="relative z-10">
-               <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-8">
+               <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-6">
                   Expand your reach with our <br/>
-                  <span className="font-serif italic text-white">global network.</span>
+                  <span className="text-[#046241]">global network.</span>
                </h2>
                
                <a 
                  href="#contact"
-                 className="inline-flex items-center gap-3 px-8 py-4 bg-[#133020] text-white rounded-full font-bold text-lg hover:bg-[#046241] transition-all hover:scale-105 shadow-lg"
+                 className="inline-flex items-center gap-3 px-8 py-4 bg-[#133020] text-white rounded-full font-bold text-lg hover:bg-[#046241] transition-all hover:scale-105 shadow-md"
                >
                   Partner with Us <ArrowUpRight size={20} />
                </a>
