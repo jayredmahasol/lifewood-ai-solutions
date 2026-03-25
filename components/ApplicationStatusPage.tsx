@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   Mail,
   Briefcase,
-  Calendar
+  Calendar,
+  User
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Squares from './react-bits/Squares';
@@ -212,24 +213,49 @@ export const ApplicationStatusPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Applicant Name</p>
-                        <p className="text-lg font-medium text-[#102A24]">{applicationData.first_name} {applicationData.last_name}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="rounded-2xl border border-[#102A24]/10 bg-white/70 p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#2F7C6F]/15 text-[#2F7C6F] flex items-center justify-center">
+                          <User size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Applicant Name</p>
+                          <p className="text-lg font-semibold text-[#102A24]">
+                            {applicationData.first_name} {applicationData.last_name}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Position Applied</p>
-                        <p className="text-lg font-medium text-[#102A24]">{applicationData.position_applied}</p>
+
+                      <div className="rounded-2xl border border-[#102A24]/10 bg-white/70 p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#F0A541]/20 text-[#C97908] flex items-center justify-center">
+                          <Briefcase size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Position Applied</p>
+                          <p className="text-lg font-semibold text-[#102A24]">{applicationData.position_applied}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Email Address</p>
-                        <p className="text-lg font-medium text-[#102A24]">{applicationData.email}</p>
+
+                      <div className="rounded-2xl border border-[#102A24]/10 bg-white/70 p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#2F7C6F]/15 text-[#2F7C6F] flex items-center justify-center">
+                          <Mail size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Email Address</p>
+                          <p className="text-base md:text-lg font-semibold text-[#102A24] break-all">{applicationData.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Date Applied</p>
-                        <p className="text-lg font-medium text-[#102A24]">
-                          {applicationData.created_at ? new Date(applicationData.created_at).toLocaleDateString() : 'Recently'}
-                        </p>
+
+                      <div className="rounded-2xl border border-[#102A24]/10 bg-white/70 p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#102A24]/10 text-[#102A24] flex items-center justify-center">
+                          <Calendar size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-[#102A24]/50 uppercase tracking-wider font-bold mb-1">Date Applied</p>
+                          <p className="text-lg font-semibold text-[#102A24]">
+                            {applicationData.created_at ? new Date(applicationData.created_at).toLocaleDateString() : 'Recently'}
+                          </p>
+                        </div>
                       </div>
                     </div>
 

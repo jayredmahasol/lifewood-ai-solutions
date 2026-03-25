@@ -20,6 +20,8 @@ export const AdminNotificationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showMultiSelect, setShowMultiSelect] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     // Check if admin
@@ -40,6 +42,13 @@ export const AdminNotificationsPage = () => {
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    const pages = Math.max(1, Math.ceil(notifications.length / itemsPerPage));
+    if (currentPage > pages) {
+      setCurrentPage(pages);
+    }
+  }, [notifications.length, itemsPerPage, currentPage]);
 
   const handleLogout = () => {
     localStorage.removeItem('isAdmin');
@@ -97,6 +106,10 @@ export const AdminNotificationsPage = () => {
   }
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const totalPages = Math.ceil(notifications.length / itemsPerPage);
+  const indexOfLastNotification = currentPage * itemsPerPage;
+  const indexOfFirstNotification = indexOfLastNotification - itemsPerPage;
+  const currentNotifications = notifications.slice(indexOfFirstNotification, indexOfLastNotification);
 
   return (
     <div className="min-h-screen bg-[#F9F7F7] flex font-sans overflow-hidden">
@@ -192,7 +205,7 @@ export const AdminNotificationsPage = () => {
           ) : (
             <div className="divide-y divide-[#133020]/5">
               <AnimatePresence>
-                {notifications.map((notification) => (
+                {currentNotifications.map((notification) => (
                   <motion.div 
                     key={notification.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -246,6 +259,47 @@ export const AdminNotificationsPage = () => {
             </div>
           )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between text-sm text-[#133020]/60">
+            <div>
+              Showing <span className="font-medium text-[#133020]">{indexOfFirstNotification + 1}</span> to{' '}
+              <span className="font-medium text-[#133020]">{Math.min(indexOfLastNotification, notifications.length)}</span> of{' '}
+              <span className="font-medium text-[#133020]">{notifications.length}</span> notifications
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Prev
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === page
+                        ? 'bg-[#046241] text-white'
+                        : 'text-[#133020]/60 hover:bg-white border border-transparent hover:border-[#133020]/10'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-[#133020]/10 text-[#133020]/60 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
           </div>
         </div>
       </main>
